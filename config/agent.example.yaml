@@ -9,14 +9,21 @@ allowedClients: [192.168.50.9]
 #   endpoint: http://docker-proxy:2375
 disks: []          # empty = all fixed drives (Windows) or "/" (Linux)
 games:
+  # Recommended: an existing control script does the work.
+  # The agent runs: <script> -Server <scriptServer> -Action Status|Start|Stop|Restart -AsJson
   - key: palworld
-    kind: process
-    exe: C:\Program Files (x86)\Steam\steamapps\common\PalServer\PalServer.exe
-    args: "-useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS"
-    processNames: [PalServer, PalServer-Win64-Shipping-Cmd]
-    stopTimeoutSeconds: 60
-    # Enable RESTAPIEnabled=True in PalWorldSettings.ini to get players and a graceful save + shutdown.
+    kind: script
+    script: D:\scripts\GameServerControl.ps1
+    scriptServer: Palworld
+    stopTimeoutSeconds: 600
+    # Optional: players and version (RESTAPIEnabled=True in PalWorldSettings.ini).
     palworldRest:
       url: http://127.0.0.1:8212
       passwordEnv: HG_PALWORLD_ADMIN_PASSWORD
-      shutdownWaitSeconds: 30
+      settingsIni: C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Saved\Config\WindowsServer\PalWorldSettings.ini
+  # Without a script: start an exe and stop it by process name.
+  # - key: myserver
+  #   kind: process
+  #   exe: C:\Games\MyServer\server.exe
+  #   args: "-port=27015"
+  #   processNames: [server]

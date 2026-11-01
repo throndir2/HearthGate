@@ -65,7 +65,9 @@ gameServers: []
 #    agentKey: palworld
 #    game: Palworld
 #    icon: gamepad
-#    connectInfo: "play.example.com:8211"   # shown only to users with games.view
+#    connectInfo: "play.example.com:8211"   # shown to users with games.view
+#    connectInfoPublic: false               # true: guests see the connect address too
+#    visibility: public                     # public | users | admins (guests see Online/Offline only)
 
 github:
   owner: throndir2

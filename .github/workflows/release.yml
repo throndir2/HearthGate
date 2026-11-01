@@ -64,6 +64,7 @@ jobs:
         run: |
           dotnet publish src/HearthGate.Agent -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out/agent-win-x64
           cp config/agent.example.yaml out/agent-win-x64/agent.yaml
+          cp deploy/windows/Install-HearthGateAgent.ps1 out/agent-win-x64/
           (cd out && zip -qr ../HearthGate.Agent-win-x64.zip agent-win-x64)
 
       - name: GitHub release

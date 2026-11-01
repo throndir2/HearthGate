@@ -60,7 +60,7 @@ builder.Services.AddHttpClient("github", c =>
     c.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
     c.Timeout = TimeSpan.FromSeconds(15);
 });
-builder.Services.AddHttpClient("agent", c => c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddHttpClient("agent", c => c.Timeout = TimeSpan.FromSeconds(30)); // a control-script status call takes several seconds
 builder.Services.AddHttpClient("agent-action", c => c.Timeout = TimeSpan.FromSeconds(660));
 
 builder.Services.Configure<ForwardedHeadersOptions>(o =>

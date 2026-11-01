@@ -104,15 +104,26 @@ The agent gives HearthGate host health and game-server control. It listens on th
 
 **Linux (Docker host):** use the `hearthgate-agent` and `docker-proxy` services in the compose example.
 
-**Windows (game PC):** download `HearthGate.Agent-win-x64.zip` from the releases, unzip it to `C:\HearthGate\Agent`, edit `agent.yaml`, then run in an admin PowerShell:
+**Windows (game PC):** download `HearthGate.Agent-win-x64.zip` from the releases and unzip it. Edit `agent.yaml`, then run in PowerShell (not elevated):
 
 ```powershell
-[Environment]::SetEnvironmentVariable("HG_AGENT_TOKEN", "<same token as in the server .env>", "Machine"); sc.exe create HearthGateAgent binPath= "C:\HearthGate\Agent\HearthGate.Agent.exe" start= auto; sc.exe start HearthGateAgent
+& "C:\Downloads\agent-win-x64\Install-HearthGateAgent.ps1" -SourceDir "C:\Downloads\agent-win-x64" -Token "<same token as in the server .env>" -AllowFrom 192.168.50.9
 ```
 
-Allow the agent port (7177) in the Windows firewall only from the HearthGate server IP. For Palworld, set `RESTAPIEnabled=True` in `PalWorldSettings.ini` and put the admin password in the env var named by `palworldRest.passwordEnv`. Then HearthGate shows players and stops the server with a save and a warning message.
+The script is `deploy/windows/Install-HearthGateAgent.ps1`. It installs the agent to `C:\HearthGate\Agent` and runs it from a scheduled task at logon, as the signed-in user, with no window. Game servers then start in your desktop session, the same as when you start them by hand. (A LocalSystem service runs in session 0, where windowed servers do not work.) The token goes into the user environment variable `HG_AGENT_TOKEN`. Windows asks once (UAC) to add the firewall rule: port 7177, only from the HearthGate server IP.
 
-Game server kinds: `process` (exe and process names), `windowsService`, `docker` (needs `POST=1` on the socket proxy).
+Game server kinds:
+
+| Kind | Use |
+|---|---|
+| `script` | Recommended when you already have a control script. The agent runs `<script> -Server <scriptServer> -Action Status|Start|Stop|Restart -AsJson`. The script must print a JSON array of `{ Server, Running, SupervisorRunning }` for `Status`. |
+| `process` | Start an exe; find and stop it by process names. |
+| `windowsService` | Start and stop a Windows service. |
+| `docker` | Start and stop a container (needs `POST=1` on the socket proxy). |
+
+For Palworld, `palworldRest` (with `RESTAPIEnabled=True` in `PalWorldSettings.ini`) adds the player list and the version. Use `settingsIni` to read the admin password from the INI file, or `passwordEnv` for an env var.
+
+Guests see each game server with **Online** or **Offline** only. `games.view` adds players, version and the connect address. The connect address shows to guests only with `connectInfoPublic: true`. Set `visibility` (`public`, `users`, `admins`) to hide a server. Start, stop and restart need `games.control:<id>` or `games.control:*`. These actions run in the background, so a long graceful stop does not hit proxy time limits, and both the request and the result go to the audit log.
 
 ## Optional OIDC (Authentik or other providers)
 
