@@ -66,6 +66,8 @@ builder.Services.AddHttpClient("agent-action", c => c.Timeout = TimeSpan.FromSec
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Walk back through every trusted hop (for example Cloudflare -> NPM) to the first untrusted address.
+    o.ForwardLimit = startupCfg.Security.TrustedProxies.Count > 0 ? null : 1;
     o.KnownProxies.Clear();
     o.KnownIPNetworks.Clear();
     o.KnownProxies.Add(IPAddress.Loopback);
