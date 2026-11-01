@@ -43,7 +43,7 @@ The site is public, so the guest surface is small:
 - Guest API answers contain only a name, description, icon, public link and a status word. No IPs, ports, hostnames, versions, container names, response times or error text.
 - Guests read a cached snapshot. Checks run only in the background, only to targets in the config file. A request can never make the server probe a URL (no SSRF).
 - Every endpoint checks permissions on the server. The UI only hides what the API already refuses.
-- Passwords: PBKDF2-HMAC-SHA512 with 600,000 iterations (ASP.NET Core Identity hasher), 12 characters minimum. Lockout for 15 minutes after 5 failures. The same error for "unknown user" and "wrong password".
+- Passwords: PBKDF2-HMAC-SHA512 with 600,000 iterations (ASP.NET Core Identity hasher), 10 characters minimum. Lockout for 15 minutes after 5 failures. The same error for "unknown user" and "wrong password".
 - Two-step sign-in (TOTP) is required before an admin can use admin tools (`auth.requireAdminTotp`). Codes cannot be used twice.
 - Cookies are `__Host-` prefixed, `Secure`, `HttpOnly`, `SameSite`. Every state-changing request needs an antiforgery (CSRF) token.
 - Sessions are revocable: password change, 2FA change, "sign out everywhere" and disabling a user all rotate a security stamp.
@@ -85,7 +85,7 @@ See [`config/hearthgate.example.yaml`](config/hearthgate.example.yaml). Main sec
 
 HearthGate reloads the file when it changes. `auth.oidc` and `security.trustedProxies` need a restart.
 
-Icons: use a built-in name (`film`, `book`, `mic`, `gamepad`, `server`, `inbox`, `music`, `tv`, ...), an emoji, or a file in `/data/icons` (`icon: /icons/plex.svg`).
+Icons: use a built-in name (`film`, `book`, `mic`, `drama`, `gamepad`, `server`, `inbox`, `music`, `tv`, ...), an emoji, or a file in `/data/icons` (`icon: /icons/plex.svg`).
 
 Environment variables:
 

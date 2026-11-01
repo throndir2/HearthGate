@@ -42,7 +42,7 @@ public sealed class AccountService(AppDb db, ConfigProvider config, IHttpContext
 
     public static string? ValidatePassword(string? password)
     {
-        if (string.IsNullOrEmpty(password) || password.Length < 12) return "The password must have at least 12 characters.";
+        if (string.IsNullOrEmpty(password) || password.Length < 10) return "The password must have at least 10 characters.";
         if (password.Length > 256) return "The password is too long.";
         return null;
     }

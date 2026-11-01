@@ -77,7 +77,7 @@ github:
   exclude: []
   # Repos that have their own hosted site are not shown in the showcase.
   hostedSites:
-    Martlet: https://martlet.example.com
+    MyProject: https://myproject.example.com
 
 auth:
   localLogin: true

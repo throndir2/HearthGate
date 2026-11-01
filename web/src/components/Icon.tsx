@@ -1,5 +1,5 @@
 import {
-  BookOpen, Box, Cloud, Code2, Database, Film, Gamepad2, Gauge, Globe, HardDrive, Headphones, Home, Inbox, Library,
+  BookOpen, Box, Cloud, Code2, Database, Drama, Film, Gamepad2, Gauge, Globe, HardDrive, Headphones, Home, Inbox, Library,
   MessageCircle, Mic, Music, Newspaper, Server, Shield, Sparkles, Tv, Wrench, Zap, Camera, Bot, Calendar, Folder, Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -10,7 +10,7 @@ const icons: Record<string, LucideIcon> = {
   gamepad: Gamepad2, games: Gamepad2, gauge: Gauge, globe: Globe, disk: HardDrive, headphones: Headphones, home: Home,
   inbox: Inbox, library: Library, chat: MessageCircle, mic: Mic, music: Music, news: Newspaper, server: Server,
   shield: Shield, sparkles: Sparkles, tv: Tv, wrench: Wrench, zap: Zap, camera: Camera, bot: Bot, calendar: Calendar,
-  folder: Folder, activity: Activity,
+  folder: Folder, activity: Activity, drama: Drama, roleplay: Drama,
 }
 
 export function ServiceIcon({ icon, name, className = 'size-6' }: { icon?: string | null; name: string; className?: string }) {

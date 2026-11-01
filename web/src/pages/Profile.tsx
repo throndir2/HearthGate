@@ -57,7 +57,7 @@ function PasswordSection({ hasPassword, username, onDone }: { hasPassword: boole
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
         <input type="text" name="username" autoComplete="username" value={username} readOnly hidden />
         {hasPassword && <input type="password" className="input" placeholder="Current password" autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} required />}
-        <input type="password" className="input" placeholder="New password (12+ characters)" autoComplete="new-password" minLength={12} value={password} onChange={e => setPassword(e.target.value)} required />
+        <input type="password" className="input" placeholder="New password (10+ characters)" autoComplete="new-password" minLength={10} value={password} onChange={e => setPassword(e.target.value)} required />
         <button className="btn-primary sm:col-span-2 sm:justify-self-start">{hasPassword ? 'Change password' : 'Set password'}</button>
       </form>
     </Section>

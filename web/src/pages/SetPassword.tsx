@@ -23,14 +23,14 @@ export default function SetPassword() {
 
   if (done) return <AuthCard title="Password set"><Message kind="ok">Your password is set. You can sign in now.</Message><Link to="/signin" className="btn-primary w-full">Sign in</Link></AuthCard>
   return (
-    <AuthCard title="Set your password" subtitle="Use at least 12 characters. A password manager helps.">
+    <AuthCard title="Set your password" subtitle="Use at least 10 characters. A password manager helps.">
       {!token && <Message kind="error">This link has no token. Ask the admin for a new link.</Message>}
       {error && <Message kind="error">{error}</Message>}
       <form onSubmit={submit} className="space-y-4">
         <div><label className="label" htmlFor="np">New password</label>
-          <input id="np" type="password" className="input" autoComplete="new-password" minLength={12} value={password} onChange={e => setPassword(e.target.value)} required /></div>
+          <input id="np" type="password" className="input" autoComplete="new-password" minLength={10} value={password} onChange={e => setPassword(e.target.value)} required /></div>
         <div><label className="label" htmlFor="cp">Type it again</label>
-          <input id="cp" type="password" className="input" autoComplete="new-password" minLength={12} value={confirm} onChange={e => setConfirm(e.target.value)} required /></div>
+          <input id="cp" type="password" className="input" autoComplete="new-password" minLength={10} value={confirm} onChange={e => setConfirm(e.target.value)} required /></div>
         <button className="btn-primary w-full" disabled={busy || !token}>{busy ? 'Saving…' : 'Set password'}</button>
       </form>
     </AuthCard>
