@@ -20,7 +20,7 @@ public static class SecurityHeaders
         h["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
         h["Cross-Origin-Opener-Policy"] = "same-origin";
         h["Cross-Origin-Resource-Policy"] = "same-origin";
-        if (ctx.Request.IsHttps) h.StrictTransportSecurity = "max-age=31536000; includeSubDomains";
+        if (ctx.Request.IsHttps) h.StrictTransportSecurity = "max-age=31536000";
         if (ctx.Request.Path.StartsWithSegments("/api")) h.CacheControl = "no-store";
         await next(ctx);
     };
