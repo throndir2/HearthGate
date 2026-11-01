@@ -1,0 +1,22 @@
+# HearthGate agent example config. Copy next to the agent binary as agent.yaml
+# (or point HG_AGENT_CONFIG to it). The token is read from the env var named in tokenEnv.
+listen: http://0.0.0.0:7177
+tokenEnv: HG_AGENT_TOKEN
+# Only these clients may call the agent (the HearthGate server). Empty = any client with the token.
+allowedClients: [192.168.50.9]
+# Read-only docker socket proxy (Linux hosts). Remove on hosts without Docker.
+# docker:
+#   endpoint: http://docker-proxy:2375
+disks: []          # empty = all fixed drives (Windows) or "/" (Linux)
+games:
+  - key: palworld
+    kind: process
+    exe: C:\Program Files (x86)\Steam\steamapps\common\PalServer\PalServer.exe
+    args: "-useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS"
+    processNames: [PalServer, PalServer-Win64-Shipping-Cmd]
+    stopTimeoutSeconds: 60
+    # Enable RESTAPIEnabled=True in PalWorldSettings.ini to get players and a graceful save + shutdown.
+    palworldRest:
+      url: http://127.0.0.1:8212
+      passwordEnv: HG_PALWORLD_ADMIN_PASSWORD
+      shutdownWaitSeconds: 30
