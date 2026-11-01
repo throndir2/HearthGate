@@ -117,6 +117,7 @@ if (startupCfg.Auth.Oidc is { Enabled: true } oidc && !string.IsNullOrWhiteSpace
         o.ResponseType = OpenIdConnectResponseType.Code;
         o.ResponseMode = OpenIdConnectResponseMode.Query;
         o.UsePkce = true;
+        o.RequireHttpsMetadata = !insecureCookies; // plain HTTP only in local development
         o.MapInboundClaims = false;
         o.GetClaimsFromUserInfoEndpoint = true;
         o.SaveTokens = false;
@@ -125,6 +126,9 @@ if (startupCfg.Auth.Oidc is { Enabled: true } oidc && !string.IsNullOrWhiteSpace
         foreach (var s in new[] { "openid", "profile", "email" }) o.Scope.Add(s);
         o.CorrelationCookie.SecurePolicy = cookieSecure;
         o.NonceCookie.SecurePolicy = cookieSecure;
+        // The provider returns with a top-level GET (response_mode=query), so Lax is enough and stricter than None.
+        o.CorrelationCookie.SameSite = SameSiteMode.Lax;
+        o.NonceCookie.SameSite = SameSiteMode.Lax;
         o.Events.OnRemoteFailure = ctx => { ctx.Response.Redirect("/signin?error=oidc"); ctx.HandleResponse(); return Task.CompletedTask; };
     });
 }

@@ -27,8 +27,10 @@ public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactor
     {
         var wanted = config.Disks;
         return DriveInfo.GetDrives()
-            .Where(d => d.IsReady && d.DriveType is DriveType.Fixed or DriveType.Network)
-            .Where(d => wanted.Count == 0 ? !OperatingSystem.IsLinux() || d.Name == "/" : wanted.Contains(d.Name, StringComparer.OrdinalIgnoreCase))
+            .Where(d => wanted.Count > 0
+                ? wanted.Contains(d.Name, StringComparer.OrdinalIgnoreCase) || wanted.Contains(d.Name.TrimEnd('/', '\\'), StringComparer.OrdinalIgnoreCase)
+                : d.DriveType == DriveType.Fixed && (!OperatingSystem.IsLinux() || d.Name == "/"))
+            .Where(d => d.IsReady && d.TotalSize > 0)
             .Select(d => new DiskInfo(d.Name, d.TotalSize, d.AvailableFreeSpace))
             .ToList();
     }

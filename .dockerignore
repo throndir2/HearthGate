@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/node_modules/
+src/HearthGate.Server/wwwroot/
+**/.hgdata/
+.git/
+.github/
+.playwright-mcp/
+.vs/
+.vscode/
+deploy/

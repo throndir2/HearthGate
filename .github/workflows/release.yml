@@ -1,0 +1,73 @@
+# Minimal release build. Runs only when a v* tag is pushed or when started by hand.
+# No tests or checks run here; validate locally before you tag.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image tags
+        id: tags
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          ver=${GITHUB_REF_NAME#v}
+          [ "${{ github.ref_type }}" = "tag" ] || ver="dev-${GITHUB_SHA::7}"
+          echo "owner=$owner" >> "$GITHUB_OUTPUT"
+          echo "ver=$ver" >> "$GITHUB_OUTPUT"
+
+      - name: Server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ steps.tags.outputs.owner }}/hearthgate:${{ steps.tags.outputs.ver }}
+            ghcr.io/${{ steps.tags.outputs.owner }}/hearthgate:latest
+
+      - name: Agent image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.agent
+          push: true
+          tags: |
+            ghcr.io/${{ steps.tags.outputs.owner }}/hearthgate-agent:${{ steps.tags.outputs.ver }}
+            ghcr.io/${{ steps.tags.outputs.owner }}/hearthgate-agent:latest
+
+      - uses: actions/setup-dotnet@v4
+        if: github.ref_type == 'tag'
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Windows agent
+        if: github.ref_type == 'tag'
+        run: |
+          dotnet publish src/HearthGate.Agent -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out/agent-win-x64
+          cp config/agent.example.yaml out/agent-win-x64/agent.yaml
+          (cd out && zip -qr ../HearthGate.Agent-win-x64.zip agent-win-x64)
+
+      - name: GitHub release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" HearthGate.Agent-win-x64.zip --generate-notes --title "HearthGate $GITHUB_REF_NAME"
