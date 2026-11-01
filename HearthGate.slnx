@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HearthGate.Agent/HearthGate.Agent.csproj" />
+    <Project Path="src/HearthGate.Contracts/HearthGate.Contracts.csproj" />
+    <Project Path="src/HearthGate.Server/HearthGate.Server.csproj" />
+  </Folder>
+</Solution>

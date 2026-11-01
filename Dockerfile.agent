@@ -1,0 +1,14 @@
+# HearthGate agent image for Linux Docker hosts. Use with a read-only docker socket proxy.
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY src/HearthGate.Contracts/ src/HearthGate.Contracts/
+COPY src/HearthGate.Agent/ src/HearthGate.Agent/
+RUN dotnet publish src/HearthGate.Agent -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build /app .
+ENV HG_AGENT_CONFIG=/config/agent.yaml DOTNET_gcServer=0
+USER app
+EXPOSE 7177
+ENTRYPOINT ["dotnet", "HearthGate.Agent.dll"]

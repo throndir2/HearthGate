@@ -1,0 +1,29 @@
+# HearthGate agent example config. Copy next to the agent binary as agent.yaml
+# (or point HG_AGENT_CONFIG to it). The token is read from the env var named in tokenEnv.
+listen: http://0.0.0.0:7177
+tokenEnv: HG_AGENT_TOKEN
+# Only these clients may call the agent (the HearthGate server). Empty = any client with the token.
+allowedClients: [192.168.50.9]
+# Read-only docker socket proxy (Linux hosts). Remove on hosts without Docker.
+# docker:
+#   endpoint: http://docker-proxy:2375
+disks: []          # empty = all fixed drives (Windows) or "/" (Linux)
+games:
+  # Recommended: an existing control script does the work.
+  # The agent runs: <script> -Server <scriptServer> -Action Status|Start|Stop|Restart -AsJson
+  - key: palworld
+    kind: script
+    script: D:\scripts\GameServerControl.ps1
+    scriptServer: Palworld
+    stopTimeoutSeconds: 600
+    # Optional: players and version (RESTAPIEnabled=True in PalWorldSettings.ini).
+    palworldRest:
+      url: http://127.0.0.1:8212
+      passwordEnv: HG_PALWORLD_ADMIN_PASSWORD
+      settingsIni: C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Saved\Config\WindowsServer\PalWorldSettings.ini
+  # Without a script: start an exe and stop it by process name.
+  # - key: myserver
+  #   kind: process
+  #   exe: C:\Games\MyServer\server.exe
+  #   args: "-port=27015"
+  #   processNames: [server]

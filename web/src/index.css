@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-accent: var(--accent, #f97316);
+  --animate-float: float 18s ease-in-out infinite;
+  --animate-float-slow: float 26s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, -4%) scale(1.08); }
+  66% { transform: translate(-5%, 5%) scale(0.95); }
+}
+
+@keyframes ping-soft {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+:root {
+  color-scheme: dark;
+}
+html:not(.dark) { color-scheme: light; }
+
+body {
+  @apply bg-stone-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100;
+  min-height: 100dvh;
+}
+
+@utility glass {
+  @apply border border-black/5 bg-white/70 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04];
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
+    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 disabled:cursor-not-allowed min-h-11;
+}
+@utility btn-primary { @apply btn bg-accent text-white shadow-lg shadow-accent/25 hover:brightness-110 active:scale-[0.98]; }
+@utility btn-ghost { @apply btn text-stone-700 hover:bg-black/5 dark:text-stone-300 dark:hover:bg-white/10; }
+@utility btn-outline { @apply btn border border-black/10 hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10; }
+@utility btn-danger { @apply btn bg-red-600/90 text-white hover:bg-red-600; }
+
+@utility input {
+  @apply w-full rounded-xl border border-black/10 bg-white/80 px-3.5 py-2.5 text-sm outline-none transition min-h-11
+    placeholder:text-stone-400 focus:border-accent focus:ring-4 focus:ring-accent/20 dark:border-white/10 dark:bg-white/5;
+}
+@utility label { @apply mb-1.5 block text-sm font-medium text-stone-700 dark:text-stone-300; }
+
+.status-ping { animation: ping-soft 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

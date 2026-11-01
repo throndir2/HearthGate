@@ -1,0 +1,109 @@
+# HearthGate example configuration.
+# Copy this file to /data/hearthgate.yaml (the HG_CONFIG variable can point elsewhere).
+# Never put secrets in this file. Fields that end in "Env" hold the NAME of an environment variable.
+# HearthGate reloads this file when it changes (OIDC and trusted proxies need a restart).
+
+site:
+  title: HearthGate
+  tagline: Everything I host, in one warm place.
+  accentColor: "#f97316"
+  # logo: /icons/logo.svg        # files in /data/icons are served at /icons/
+  footerLinks:
+    - label: GitHub
+      url: https://github.com/throndir2
+
+categories:
+  - { id: media, name: Media, icon: film }
+  - { id: apps, name: Apps, icon: sparkles }
+  - { id: games, name: Games, icon: gamepad }
+  - { id: tools, name: Tools, icon: wrench }
+
+# visibility: public (everyone) | users (signed-in) | admins
+# check.type: http | tcp | none. check.target is the INTERNAL address; guests never see it.
+services:
+  - id: plex
+    name: Plex
+    description: Movies and TV shows.
+    icon: film
+    category: media
+    url: https://app.plex.tv
+    check: { type: http, target: "http://192.168.50.9:32400/identity" }
+  - id: requests
+    name: Requests
+    description: Ask for new movies and shows.
+    icon: inbox
+    category: media
+    url: https://seerr.example.com
+    check: { type: http, target: "http://seerr:5055/api/v1/status" }
+  - id: books
+    name: Books
+    description: Read books and comics.
+    icon: book
+    category: media
+    url: https://kavita.example.com
+  - id: dashboard
+    name: Internal dashboard
+    description: Only for signed-in users.
+    icon: gauge
+    category: tools
+    url: https://dash.example.com
+    visibility: users
+    check: { type: tcp, target: "192.168.1.10:8080" }
+
+# Host agents. Reach them only on the private network. The token is in the named env var.
+hosts:
+  - id: nas
+    name: NAS
+    agentUrl: http://hearthgate-agent:7177
+    tokenEnv: HG_AGENT_NAS_TOKEN
+
+# Game servers are controlled through the agent on their host. agentKey must exist in that agent's config.
+gameServers: []
+#  - id: palworld
+#    name: Palworld
+#    host: gamepc
+#    agentKey: palworld
+#    game: Palworld
+#    icon: gamepad
+#    connectInfo: "play.example.com:8211"   # shown to users with games.view
+#    connectInfoPublic: false               # true: guests see the connect address too
+#    visibility: public                     # public | users | admins (guests see Online/Offline only)
+
+github:
+  owner: throndir2
+  # tokenEnv: HG_GITHUB_TOKEN      # optional, only raises the rate limit
+  cacheMinutes: 60
+  includeForks: false
+  includeArchived: false
+  hideReposWithHomepage: false
+  exclude: []
+  # Repos that have their own hosted site are not shown in the showcase.
+  hostedSites:
+    MyProject: https://myproject.example.com
+
+auth:
+  localLogin: true
+  accountRequests: true
+  requireAdminTotp: true
+  sessionHours: 168
+  # Groups are created at first start if missing. Permissions:
+  # status.details, services.private, games.view, games.control:*, games.control:<serverId>, hosts.view
+  groups:
+    - { name: Members, permissions: [] }
+    - { name: Trusted, permissions: [status.details, services.private, games.view] }
+    - { name: Game hosts, permissions: [games.view, "games.control:*"] }
+  # Optional. HearthGate works fully without it.
+  oidc:
+    enabled: false
+    displayName: Authentik
+    authority: https://auth.example.com/application/o/hearthgate/
+    clientId: hearthgate
+    clientSecretEnv: HG_OIDC_CLIENT_SECRET
+    autoProvision: none        # none | pending | approved
+    groupsClaim: groups
+    groupMap: {}               # e.g. { "authentik Admins": Trusted }
+
+security:
+  # Reverse proxies whose X-Forwarded-For is trusted (IP or CIDR). Needed for correct rate limits.
+  trustedProxies: []
+  proofOfWorkBits: 16
