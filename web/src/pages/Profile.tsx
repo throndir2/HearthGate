@@ -35,14 +35,14 @@ export default function Profile() {
       </div>
       {link && linkMessages[link] && <Message kind={linkMessages[link][0]}>{linkMessages[link][1]}</Message>}
       {user.adminNeedsTotp && <Message kind="info">Turn on two-step sign-in below to use the admin tools.</Message>}
-      <PasswordSection hasPassword={user.hasPassword} onDone={refresh} />
+      <PasswordSection hasPassword={user.hasPassword} username={user.username} onDone={refresh} />
       <TotpSection enabled={user.totpEnabled} onDone={refresh} />
       {site?.auth.oidc && <LinksSection provider={site.auth.oidc.displayName} />}
     </div>
   )
 }
 
-function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone: () => Promise<void> }) {
+function PasswordSection({ hasPassword, username, onDone }: { hasPassword: boolean; username: string; onDone: () => Promise<void> }) {
   const [current, setCurrent] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState<[string, string] | null>(null)
@@ -55,6 +55,7 @@ function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone
     <Section title="Password" icon={<KeyRound className="size-5" />}>
       {msg && <Message kind={msg[0] as 'ok' | 'error'}>{msg[1]}</Message>}
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
+        <input type="text" name="username" autoComplete="username" value={username} readOnly hidden />
         {hasPassword && <input type="password" className="input" placeholder="Current password" autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} required />}
         <input type="password" className="input" placeholder="New password (12+ characters)" autoComplete="new-password" minLength={12} value={password} onChange={e => setPassword(e.target.value)} required />
         <button className="btn-primary sm:col-span-2 sm:justify-self-start">{hasPassword ? 'Change password' : 'Set password'}</button>

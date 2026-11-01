@@ -64,9 +64,9 @@ public static class AccountEndpoints
             if (!string.IsNullOrEmpty(body.Website)) return Results.Ok(new { ok = true }); // honeypot: pretend success
             if (!pow.Verify(body.Pow, body.Nonce)) return Error("The security check failed. Reload the page and try again.");
             if (AccountService.ValidateUsername(body.Username) is { } err) return Error(err);
-            var email = body.Email?.Trim();
+            var email = string.IsNullOrWhiteSpace(body.Email) ? null : body.Email.Trim();
             if (email is { Length: > 0 } && (email.Length > 254 || !email.Contains('@'))) return Error("The email address is not valid.");
-            var message = body.Message?.Trim();
+            var message = string.IsNullOrWhiteSpace(body.Message) ? null : body.Message.Trim();
             if (message is { Length: > 500 }) return Error("The message is too long (500 characters at most).");
             var norm = AccountService.Normalize(body.Username!);
             var pending = await db.AccountRequests.CountAsync(r => r.Status == RequestStatus.Pending);
