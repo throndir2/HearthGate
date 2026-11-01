@@ -16,4 +16,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- On Windows the agent runs in the user's session from a logon task; no console window. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
 </Project>

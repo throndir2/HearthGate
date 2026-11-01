@@ -9,6 +9,9 @@ using HearthGate.Contracts;
 
 var config = AgentConfig.Load();
 var token = Environment.GetEnvironmentVariable(config.TokenEnv);
+// A logon task does not see a user variable that was set after the last sign-in; read it from the registry.
+if (string.IsNullOrEmpty(token) && OperatingSystem.IsWindows())
+    token = Environment.GetEnvironmentVariable(config.TokenEnv, EnvironmentVariableTarget.User);
 if (string.IsNullOrEmpty(token) || token.Length < 24)
 {
     Console.Error.WriteLine($"Set the environment variable {config.TokenEnv} to a random token of at least 24 characters.");
@@ -22,6 +25,7 @@ builder.WebHost.ConfigureKestrel(k => k.AddServerHeader = false);
 builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<HostReader>();
 builder.Services.AddSingleton<GameController>();
+builder.Services.AddSingleton<ControlScriptRunner>();
 builder.Services.AddHttpClient("docker", c => c.Timeout = TimeSpan.FromSeconds(70));
 builder.Services.AddHttpClient("game", c => c.Timeout = TimeSpan.FromSeconds(10));
 

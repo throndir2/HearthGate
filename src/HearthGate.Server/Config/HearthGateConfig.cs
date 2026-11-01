@@ -86,6 +86,8 @@ public sealed class GameServerConfig
     public string? Game { get; set; }
     public string? Icon { get; set; }
     public string? ConnectInfo { get; set; }
+    public bool ConnectInfoPublic { get; set; } // show the connect address to guests too
+    public string Visibility { get; set; } = Config.Visibility.Public;
 }
 
 public sealed class GitHubConfig

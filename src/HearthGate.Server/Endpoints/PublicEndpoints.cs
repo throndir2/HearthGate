@@ -29,6 +29,7 @@ public static class PublicEndpoints
                     Oidc = c.Auth.Oidc is { Enabled: true } o ? new { o.DisplayName } : null,
                 },
                 ShowProjects = !string.IsNullOrWhiteSpace(c.GitHub.Owner),
+                ShowGames = c.GameServers.Count > 0,
             });
         });
 

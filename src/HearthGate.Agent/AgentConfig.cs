@@ -32,6 +32,7 @@ public sealed class DockerConfig
 
 public static class GameKinds
 {
+    public const string Script = "script";
     public const string Process = "process";
     public const string WindowsService = "windowsService";
     public const string Docker = "docker";
@@ -41,6 +42,9 @@ public sealed class GameConfig
 {
     public string Key { get; set; } = "";
     public string Kind { get; set; } = GameKinds.Process;
+    // script: a control script with "-Server <scriptServer> -Action Status|Start|Stop|Restart [-AsJson]"
+    public string? Script { get; set; }
+    public string? ScriptServer { get; set; }
     // process
     public string? Exe { get; set; }
     public string? Args { get; set; }
@@ -58,6 +62,8 @@ public sealed class PalworldRestConfig
 {
     public string Url { get; set; } = "http://127.0.0.1:8212";
     public string PasswordEnv { get; set; } = "HG_PALWORLD_ADMIN_PASSWORD";
+    // Optional: read AdminPassword from PalWorldSettings.ini when the env var is empty (no copy of the secret).
+    public string? SettingsIni { get; set; }
     public int ShutdownWaitSeconds { get; set; } = 30;
     public string ShutdownMessage { get; set; } = "The server will restart soon. Please log out.";
 }

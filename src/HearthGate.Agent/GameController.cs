@@ -7,9 +7,9 @@ using HearthGate.Contracts;
 namespace HearthGate.Agent;
 
 // Owns: status and start/stop/restart of the game servers in agent.yaml. Nothing else can be run.
-// Kinds: process (exe + process names), windowsService, docker (through the socket proxy).
+// Kinds: script (an existing control script does the work), process (exe + process names), windowsService, docker (socket proxy).
 // If palworldRest is set, it is used for players/version and for a graceful save + shutdown.
-public sealed class GameController(AgentConfig config, IHttpClientFactory httpFactory, ILogger<GameController> log)
+public sealed class GameController(AgentConfig config, IHttpClientFactory httpFactory, ControlScriptRunner scripts, ILogger<GameController> log)
 {
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
     private readonly ConcurrentDictionary<string, string> _transition = new();
@@ -50,6 +50,7 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
         if (!await gate.WaitAsync(0, ct)) return new GameActionResult(false, "Another action is running for this server.");
         try
         {
+            if (g.Kind == GameKinds.Script) { _transition[g.Key] = action == GameActions.Stop ? GameStates.Stopping : GameStates.Starting; return await scripts.Act(g, action, ct); }
             var state = await RawState(g, ct);
             switch (action)
             {
@@ -85,6 +86,8 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
     {
         switch (g.Kind)
         {
+            case GameKinds.Script:
+                return await scripts.State(g, ct);
             case GameKinds.Process:
                 return Processes(g).Count > 0 ? GameStates.Running : GameStates.Stopped;
             case GameKinds.WindowsService when OperatingSystem.IsWindows():
@@ -194,7 +197,13 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
     {
         var client = httpFactory.CreateClient("game");
         using var req = new HttpRequestMessage(method, rest.Url.TrimEnd('/') + path);
-        var pw = Environment.GetEnvironmentVariable(rest.PasswordEnv) ?? "";
+        var pw = Environment.GetEnvironmentVariable(rest.PasswordEnv);
+        if (string.IsNullOrEmpty(pw) && rest.SettingsIni is { } ini && File.Exists(ini))
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(File.ReadAllText(ini), "AdminPassword=\"([^\"]*)\"");
+            pw = m.Success ? m.Groups[1].Value : null;
+        }
+        pw ??= "";
         req.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes("admin:" + pw)));
         if (body is not null) req.Content = JsonContent.Create(body);
         using var resp = await client.SendAsync(req, ct);

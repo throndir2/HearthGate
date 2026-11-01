@@ -3,10 +3,11 @@ import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight, Search } from 'lucide-react'
 import { useSession } from '../session'
-import { useProjects, useServices } from '../hooks'
+import { usePoll, useProjects, useServices } from '../hooks'
 import { ProjectCard, ServiceCard } from '../components/Cards'
+import { GameCard } from '../components/GameCard'
 import { StatusDot, statusMeta } from '../components/Status'
-import type { Status } from '../api'
+import type { GameServer, Status } from '../api'
 
 const overallText: Record<Status, string> = {
   up: 'All systems are running',
@@ -19,6 +20,7 @@ export default function Home() {
   const { site, user } = useSession()
   const { data, error } = useServices()
   const projects = useProjects(!!site?.showProjects)
+  const games = usePoll<GameServer[]>(site?.showGames ? '/api/games' : null, 30000).data
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string | null>(null)
 
@@ -75,6 +77,18 @@ export default function Home() {
         </motion.div>
         {data && services.length === 0 && <p className="py-10 text-center text-stone-500">No services match your search.</p>}
       </section>
+
+      {(games?.length ?? 0) > 0 && (
+        <section aria-labelledby="games-title">
+          <div className="mb-5 flex items-end justify-between gap-3">
+            <h2 id="games-title" className="text-xl font-semibold">Game servers</h2>
+            <Link to="/games" className="btn-ghost">Details <ArrowRight className="size-4" /></Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {games!.map(g => <Link key={g.id} to="/games" className="block transition hover:-translate-y-1"><GameCard g={g} compact /></Link>)}
+          </div>
+        </section>
+      )}
 
       {site?.showProjects && (projects?.length ?? 0) > 0 && (
         <section aria-labelledby="projects-title">

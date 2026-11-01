@@ -29,9 +29,12 @@ public sealed class GitHubShowcaseService(IHttpClientFactory httpFactory, Config
 
     private async Task Refresh(GitHubConfig cfg, CancellationToken ct)
     {
-        if (!await _lock.WaitAsync(0, ct)) return; // another request refreshes; serve the cache
+        // With an empty cache, wait for the running fetch; otherwise serve the cache while another request refreshes.
+        if (_repos.Count == 0) await _lock.WaitAsync(ct);
+        else if (!await _lock.WaitAsync(0, ct)) return;
         try
         {
+            if (DateTimeOffset.UtcNow - _fetchedAt <= TimeSpan.FromMinutes(Math.Max(5, cfg.CacheMinutes))) return;
             var client = httpFactory.CreateClient("github");
             using var req = new HttpRequestMessage(HttpMethod.Get,
                 $"https://api.github.com/users/{Uri.EscapeDataString(cfg.Owner!)}/repos?per_page=100&type=owner&sort=updated");

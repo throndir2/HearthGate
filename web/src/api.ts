@@ -42,6 +42,7 @@ export interface Site {
   categories: { id: string; name: string; icon?: string | null }[]
   auth: { localLogin: boolean; accountRequests: boolean; oidc: { displayName: string } | null }
   showProjects: boolean
+  showGames: boolean
 }
 
 export interface SessionUser {

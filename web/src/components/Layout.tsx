@@ -39,7 +39,7 @@ export default function Layout() {
     { to: '/', label: 'Home' },
     { to: '/status', label: 'Status' },
     ...(site?.showProjects ? [{ to: '/projects', label: 'Projects' }] : []),
-    ...(can('games.view') ? [{ to: '/games', label: 'Games' }] : []),
+    ...(site?.showGames ? [{ to: '/games', label: 'Games' }] : []),
     ...(can('hosts.view') ? [{ to: '/hosts', label: 'Hosts' }] : []),
     ...(user?.isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
   ]
