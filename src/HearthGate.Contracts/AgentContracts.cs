@@ -15,7 +15,11 @@ public sealed record HostSnapshot(
 public sealed record DiskInfo(string Name, long TotalBytes, long FreeBytes);
 
 public sealed record ContainerInfo(string Name, string Image, string State, string Status, string? Health,
-    IReadOnlyList<string>? Ports = null, string? Project = null);
+    IReadOnlyList<string>? Ports = null, string? Project = null, ContainerStats? Stats = null);
+
+// CpuPercent is the share of the whole host (all cores), 0-100. Rates are bytes per second since the previous poll.
+public sealed record ContainerStats(double? CpuPercent, long MemoryBytes, long? MemoryLimitBytes,
+    double? NetRxBytesPerSec, double? NetTxBytesPerSec, double? DiskReadBytesPerSec, double? DiskWriteBytesPerSec);
 
 public sealed record GameServerStatus(
     string Key,

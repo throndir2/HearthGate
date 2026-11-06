@@ -40,6 +40,54 @@ const needsAttention = (c: ContainerView) => c.state !== 'running' || c.health =
 // "Exited (0)" containers are usually one-shot jobs; only a non-zero exit is a problem.
 const isProblem = (c: ContainerView) => c.health === 'unhealthy' || c.state === 'restarting' || c.state === 'dead' || (c.state === 'exited' && !/Exited \(0\)/.test(c.status))
 
+// Resource use. CPU is the share of the whole host; memory is the share of the container limit (the host or VM memory if no limit).
+const cpuOf = (c: ContainerView) => c.stats?.cpuPercent ?? -1
+const memOf = (c: ContainerView) => c.stats?.memoryBytes ?? -1
+const memPct = (c: ContainerView) => c.stats?.memoryLimitBytes ? (100 * c.stats.memoryBytes) / c.stats.memoryLimitBytes : null
+const ioOf = (c: ContainerView) => (c.stats?.netRxBytesPerSec ?? 0) + (c.stats?.netTxBytesPerSec ?? 0) + (c.stats?.diskReadBytesPerSec ?? 0) + (c.stats?.diskWriteBytesPerSec ?? 0)
+const isHog = (c: ContainerView) => cpuOf(c) >= 50 || (memPct(c) ?? 0) >= 25
+const rate = (n?: number | null) => n == null ? '–' : `${bytes(n)}/s`
+const pct = (n?: number | null) => n == null ? '–' : `${n < 1 ? n.toFixed(2) : n < 10 ? n.toFixed(1) : n.toFixed(0)}%`
+
+type SortKey = 'name' | 'cpu' | 'memory' | 'io'
+const sorters: Record<SortKey, (a: ContainerView, b: ContainerView) => number> = {
+  name: (a, b) => a.name.localeCompare(b.name),
+  cpu: (a, b) => cpuOf(b) - cpuOf(a),
+  memory: (a, b) => memOf(b) - memOf(a),
+  io: (a, b) => ioOf(b) - ioOf(a),
+}
+
+function statsTitle(c: ContainerView) {
+  const s = c.stats
+  if (!s) return ''
+  return `\nCPU ${pct(s.cpuPercent)} of the host\nMemory ${bytes(s.memoryBytes)}${s.memoryLimitBytes ? ` of ${bytes(s.memoryLimitBytes)} (${pct(memPct(c))})` : ''}`
+    + `\nNetwork in ${rate(s.netRxBytesPerSec)}, out ${rate(s.netTxBytesPerSec)}\nDisk read ${rate(s.diskReadBytesPerSec)}, write ${rate(s.diskWriteBytesPerSec)}`
+}
+
+function Busiest({ title, rows, value, bar }: { title: string; rows: { c: ContainerView; host: string }[]; value: (c: ContainerView) => string; bar: (c: ContainerView) => number }) {
+  return (
+    <div className="glass rounded-2xl p-4">
+      <h3 className="mb-3 text-sm font-medium text-stone-500">{title}</h3>
+      {rows.length === 0 && <p className="text-sm text-stone-500">No data yet. Statistics show after the second poll (about 20 s).</p>}
+      <div className="space-y-2.5">
+        {rows.map(({ c, host }) => (
+          <div key={host + c.name} title={`${c.image}${statsTitle(c)}`}>
+            <div className="flex items-baseline gap-2 text-sm">
+              <span className="truncate font-medium">{c.name}</span>
+              <span className="truncate text-xs text-stone-500">{host}</span>
+              <span className={`ml-auto shrink-0 font-mono text-xs ${isHog(c) ? 'text-amber-500' : 'text-stone-500'}`}>{value(c)}</span>
+            </div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+              <motion.div className={`h-full rounded-full ${isHog(c) ? 'bg-amber-500' : 'bg-accent'}`}
+                initial={{ width: 0 }} animate={{ width: `${Math.max(1, Math.min(100, bar(c)))}%` }} transition={{ type: 'spring', stiffness: 80 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function networkBadge(h: HostView) {
   const n = h.network
   if (!h.address) return null
@@ -62,8 +110,13 @@ export default function Hosts() {
   const { data, error } = usePoll<HostView[]>('/api/hosts', 15000)
   const [filter, setFilter] = useState('')
   const [problemsOnly, setProblemsOnly] = useState(false)
+  const [sort, setSort] = useState<SortKey>('name')
 
   const all = data ?? []
+  const withHost = all.flatMap(h => (h.snapshot?.containers ?? []).filter(c => c.stats).map(c => ({ c, host: h.name })))
+  const topCpu = [...withHost].filter(x => x.c.stats?.cpuPercent != null).sort((a, b) => cpuOf(b.c) - cpuOf(a.c)).slice(0, 5)
+  const topMem = [...withHost].sort((a, b) => memOf(b.c) - memOf(a.c)).slice(0, 5)
+  const maxCpu = Math.max(1, ...topCpu.map(x => cpuOf(x.c)))
   const checked = all.filter(h => h.network?.reachable != null)
   const reachable = checked.filter(h => h.network?.reachable).length
   const agents = all.filter(h => h.hasAgent)
@@ -97,9 +150,24 @@ export default function Hosts() {
         </div>
       )}
 
+      {withHost.length > 0 && (
+        <div className="grid gap-3 md:grid-cols-2">
+          <Busiest title="Busiest containers: CPU (share of the host)" rows={topCpu} value={c => pct(c.stats?.cpuPercent)}
+            bar={c => (100 * Math.max(0, cpuOf(c))) / maxCpu} />
+          <Busiest title="Busiest containers: memory" rows={topMem} value={c => `${bytes(c.stats?.memoryBytes)}${memPct(c) != null ? ` · ${pct(memPct(c))}` : ''}`}
+            bar={c => memPct(c) ?? 0} />
+        </div>
+      )}
+
       {data && containers.length > 0 && (
         <div className="flex flex-wrap items-center gap-3">
           <input className="input !min-h-9 !py-1.5 max-w-64" placeholder="Filter containers…" value={filter} onChange={e => setFilter(e.target.value)} aria-label="Filter containers" />
+          <select className="input !min-h-9 !w-auto !py-1.5" value={sort} onChange={e => setSort(e.target.value as SortKey)} aria-label="Sort containers">
+            <option value="name">Sort by name</option>
+            <option value="cpu">Sort by CPU</option>
+            <option value="memory">Sort by memory</option>
+            <option value="io">Sort by network and disk</option>
+          </select>
           <label className="flex items-center gap-2 text-sm text-stone-500">
             <input type="checkbox" checked={problemsOnly} onChange={e => setProblemsOnly(e.target.checked)} />Show only problems
           </label>
@@ -109,7 +177,7 @@ export default function Hosts() {
       {data?.map(h => {
         const s = h.snapshot
         const mem = s?.memoryTotalBytes && s.memoryUsedBytes != null ? (100 * s.memoryUsedBytes) / s.memoryTotalBytes : null
-        const list = (s?.containers ?? []).filter(matches)
+        const list = (s?.containers ?? []).filter(matches).sort(sorters[sort])
         const attention = (s?.containers ?? []).filter(needsAttention).length
         const hostProblems = (s?.containers ?? []).filter(isProblem).length
         return (
@@ -148,13 +216,18 @@ export default function Hosts() {
                 </h3>
                 <div className="grid gap-1.5 md:grid-cols-2">
                   {list.map(c => (
-                    <div key={c.name} className="flex items-center gap-2 rounded-lg bg-black/[0.03] px-2.5 py-1.5 text-sm dark:bg-white/[0.04]" title={`${c.image}${c.project ? `\nCompose project: ${c.project}` : ''}\n${c.status}`}>
+                    <div key={c.name} className="flex items-center gap-2 rounded-lg bg-black/[0.03] px-2.5 py-1.5 text-sm dark:bg-white/[0.04]" title={`${c.image}${c.project ? `\nCompose project: ${c.project}` : ''}\n${c.status}${statsTitle(c)}`}>
                       <span className={`size-2 shrink-0 rounded-full ${isProblem(c) ? 'bg-red-500' : c.state !== 'running' ? 'bg-stone-400' : c.health === 'starting' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                       <span className="truncate">{c.name}</span>
                       {c.ports && c.ports.length > 0 && (
                         <span className="hidden truncate font-mono text-xs text-stone-500 sm:inline">{c.ports.map(p => p.replace('/tcp', '')).join(', ')}</span>
                       )}
-                      <span className={`ml-auto shrink-0 text-xs ${isProblem(c) ? 'text-red-500' : 'text-stone-500'}`}>{c.status.replace(/\s*\((healthy|health: starting)\)/, '')}</span>
+                      {c.stats && (
+                        <span className={`ml-auto shrink-0 font-mono text-xs ${isHog(c) ? 'text-amber-500' : 'text-stone-500'}`}>
+                          {sort === 'io' ? `${rate(ioOf(c))} I/O` : `${pct(c.stats.cpuPercent)} · ${bytes(c.stats.memoryBytes)}`}
+                        </span>
+                      )}
+                      <span className={`${c.stats ? '' : 'ml-auto'} shrink-0 text-xs ${isProblem(c) ? 'text-red-500' : 'text-stone-500'}`}>{c.status.replace(/\s*\((healthy|health: starting)\)/, '')}</span>
                     </div>
                   ))}
                   {list.length === 0 && <p className="text-sm text-stone-500">No containers match the filter.</p>}
