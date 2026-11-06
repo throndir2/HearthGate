@@ -45,6 +45,10 @@ public sealed class ControlScriptRunner(ILogger<ControlScriptRunner> log)
         });
     }
 
+    // Contract for the script channel: "-Server <server> -Action Command -Command <text>". Stdout is the command output.
+    public Task<(int Code, string Output, string Error)> Command(string script, string server, string text, TimeSpan timeout, CancellationToken ct) =>
+        Run(script, ["-Server", server, "-Action", "Command", "-Command", text], timeout, ct);
+
     private async Task<Dictionary<string, string>> AllStates(string script, CancellationToken ct)
     {
         await _statusLock.WaitAsync(ct);

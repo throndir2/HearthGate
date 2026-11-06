@@ -5,7 +5,7 @@ using HearthGate.Agent;
 using HearthGate.Contracts;
 
 // HearthGate host agent. Listens on the private network only. Every request needs the bearer token.
-// Endpoints: GET /v1/host, GET /v1/games, POST /v1/games/{key}/{start|stop|restart}.
+// Endpoints: GET /v1/host, GET /v1/games, POST /v1/games/{key}/{start|stop|restart}, POST /v1/games/{key}/commands/{id}.
 
 var config = AgentConfig.Load();
 var token = Environment.GetEnvironmentVariable(config.TokenEnv);
@@ -26,6 +26,8 @@ builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<HostReader>();
 builder.Services.AddSingleton<GameController>();
 builder.Services.AddSingleton<ControlScriptRunner>();
+builder.Services.AddSingleton<GameCommandCatalog>();
+builder.Services.AddSingleton<GameCommandRunner>();
 builder.Services.AddHttpClient("docker", c => c.Timeout = TimeSpan.FromSeconds(70))
     .ConfigurePrimaryHttpMessageHandler(() => DockerHttp.Handler(config.Docker?.Endpoint));
 builder.Services.AddHttpClient("game", c => c.Timeout = TimeSpan.FromSeconds(10));
@@ -64,5 +66,15 @@ app.MapPost("/v1/games/{key}/{action}", async (string key, string action, GameCo
     return Results.Json(result, statusCode: result.Ok ? 200 : (int)HttpStatusCode.Conflict);
 });
 
+app.MapPost("/v1/games/{key}/commands/{id}", async (string key, string id, GameCommandRequest? body, GameController games, GameCommandCatalog catalog, CancellationToken ct) =>
+{
+    var g = games.Find(key);
+    var cmd = g is null ? null : catalog.Command(g, id);
+    if (g is null || cmd is null || cmd.Hidden) return Results.NotFound(new GameCommandResult(false, "Unknown server or command.", null));
+    var result = await games.Command(g, cmd, body?.Params, ct);
+    return Results.Json(result, statusCode: result.Ok ? 200 : (int)HttpStatusCode.Conflict);
+});
+
+app.Services.GetRequiredService<GameCommandCatalog>();
 app.Run();
 return 0;

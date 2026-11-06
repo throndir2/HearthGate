@@ -1,0 +1,46 @@
+# ARK: Survival Ascended. Start the server with ?RCONEnabled=True?RCONPort=27020 and set ServerAdminPassword.
+# passwordIni can point to GameUserSettings.ini (passwordIniKey: ServerAdminPassword) instead of an env var.
+id: ark-ascended
+name: "ARK: Survival Ascended"
+channel:
+  type: rcon
+  address: 127.0.0.1:27020
+  passwordEnv: HG_ARK_ADMIN_PASSWORD
+  passwordIniKey: ServerAdminPassword
+commands:
+  - id: say
+    label: Send a message
+    template: "ServerChat {message}"
+    params:
+      - { name: message, label: Message, maxLength: 200 }
+  - id: players
+    label: Show players
+    template: "ListPlayers"
+  - id: save
+    label: Save the world
+    template: "SaveWorld"
+  - id: kick
+    label: Kick a player
+    confirm: true
+    template: "KickPlayer {playerId}"
+    params:
+      - { name: playerId, label: Player ID (from Show players), pattern: "[A-Za-z0-9]{1,64}" }
+  - id: ban
+    label: Ban a player
+    level: admin
+    confirm: true
+    template: "BanPlayer {playerId}"
+    params:
+      - { name: playerId, label: Player ID, pattern: "[A-Za-z0-9]{1,64}" }
+  - id: unban
+    label: Remove a ban
+    level: admin
+    template: "UnbanPlayer {playerId}"
+    params:
+      - { name: playerId, label: Player ID, pattern: "[A-Za-z0-9]{1,64}" }
+stopSteps:
+  - command: say
+    params: { message: "The server stops in 10 seconds." }
+    wait: 10
+  - command: save
+    wait: 5

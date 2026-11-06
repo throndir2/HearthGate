@@ -10,6 +10,8 @@ allowedClients: [192.168.50.9]
 # docker:
 #   endpoint: http://docker-proxy:2375
 disks: []          # empty = all fixed drives (Windows) or "/" (Linux)
+# Extra game profiles (*.yaml). Default: the game-profiles folder next to this file.
+# profilesDir: C:\HearthGate\Agent\game-profiles
 games:
   # Recommended: an existing control script does the work.
   # The agent runs: <script> -Server <scriptServer> -Action Status|Start|Stop|Restart -AsJson
@@ -23,6 +25,29 @@ games:
       url: http://127.0.0.1:8212
       passwordEnv: HG_PALWORLD_ADMIN_PASSWORD
       settingsIni: C:\Program Files (x86)\Steam\steamapps\common\PalServer\Pal\Saved\Config\WindowsServer\PalWorldSettings.ini
+    # Optional: server commands from the built-in Palworld profile (message, save, kick, ban...).
+    # The profile uses the palworldRest URL and password above.
+    # profile: palworld
+    # stopSteps: []      # the control script already saves and stops the server
+  # A Minecraft server in Docker with RCON (enable-rcon=true in server.properties).
+  # - key: minecraft
+  #   kind: docker
+  #   container: minecraft
+  #   profile: minecraft
+  #   channel:
+  #     address: minecraft:25575     # the container name when the agent runs in Docker on the same network
+  #     passwordEnv: HG_MINECRAFT_RCON_PASSWORD
+  #   commands:
+  #     - id: weather              # remove a profile command
+  #       disabled: true
+  #     - id: difficulty           # add your own command
+  #       label: Set the difficulty
+  #       level: admin
+  #       template: "difficulty {value}"
+  #       params:
+  #         - { name: value, label: Difficulty, type: choice, options: [peaceful, easy, normal, hard] }
+  # Commands through your own control script:
+  #   channel: { type: script }   # runs <script> -Server <scriptServer> -Action Command -Command "<text>"
   # Without a script: start an exe and stop it by process name.
   # - key: myserver
   #   kind: process

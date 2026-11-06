@@ -184,6 +184,6 @@ public static class AdminEndpoints
 
     private static string CleanPermissions(IEnumerable<string>? perms) =>
         string.Join(' ', (perms ?? []).Select(p => p.Trim())
-            .Where(p => Permissions.Catalog.Contains(p) || System.Text.RegularExpressions.Regex.IsMatch(p, "^games\\.control:[A-Za-z0-9_-]{1,64}$"))
+            .Where(p => Permissions.Catalog.Contains(p) || System.Text.RegularExpressions.Regex.IsMatch(p, "^games\\.(control|admin):[A-Za-z0-9_-]{1,64}$"))
             .Distinct());
 }

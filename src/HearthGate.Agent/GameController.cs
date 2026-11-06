@@ -8,8 +8,10 @@ namespace HearthGate.Agent;
 
 // Owns: status and start/stop/restart of the game servers in agent.yaml. Nothing else can be run.
 // Kinds: script (an existing control script does the work), process (exe + process names), windowsService, docker (socket proxy).
-// If palworldRest is set, it is used for players/version and for a graceful save + shutdown.
-public sealed class GameController(AgentConfig config, IHttpClientFactory httpFactory, ControlScriptRunner scripts, ILogger<GameController> log)
+// If palworldRest is set, it is used for players/version and for a graceful save + shutdown (when no stop steps are set).
+// Server commands come from GameCommandCatalog and run through GameCommandRunner; stop steps run before a stop or restart.
+public sealed class GameController(AgentConfig config, IHttpClientFactory httpFactory, ControlScriptRunner scripts,
+    GameCommandCatalog catalog, GameCommandRunner runner, ILogger<GameController> log)
 {
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
     private readonly ConcurrentDictionary<string, string> _transition = new();
@@ -41,7 +43,7 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
             }
             catch (Exception ex) when (ex is not OperationCanceledException) { log.LogDebug("Palworld REST failed: {Message}", ex.Message); }
         }
-        return new GameServerStatus(g.Key, state, players, names, version, null);
+        return new GameServerStatus(g.Key, state, players, names, version, null, catalog.Info(g));
     }
 
     public async Task<GameActionResult> Act(GameConfig g, string action, CancellationToken ct)
@@ -50,7 +52,13 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
         if (!await gate.WaitAsync(0, ct)) return new GameActionResult(false, "Another action is running for this server.");
         try
         {
-            if (g.Kind == GameKinds.Script) { _transition[g.Key] = action == GameActions.Stop ? GameStates.Stopping : GameStates.Starting; return await scripts.Act(g, action, ct); }
+            if (g.Kind == GameKinds.Script)
+            {
+                _transition[g.Key] = action == GameActions.Stop ? GameStates.Stopping : GameStates.Starting;
+                if (action != GameActions.Start && catalog.For(g).StopSteps.Count > 0 && await RawState(g, ct) == GameStates.Running)
+                    await RunStopSteps(g, ct);
+                return await scripts.Act(g, action, ct);
+            }
             var state = await RawState(g, ct);
             switch (action)
             {
@@ -135,7 +143,11 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
     private async Task Stop(GameConfig g, CancellationToken ct)
     {
         _transition[g.Key] = GameStates.Stopping;
-        if (g.PalworldRest is { } rest)
+        if (catalog.For(g).StopSteps.Count > 0)
+        {
+            if (await RunStopSteps(g, ct)) return;
+        }
+        else if (g.PalworldRest is { } rest)
         {
             try
             {
@@ -164,6 +176,37 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
                 await Docker(HttpMethod.Post, $"/containers/{Uri.EscapeDataString(g.Container!)}/stop?t={g.StopTimeoutSeconds}", ct);
                 break;
         }
+    }
+
+    public async Task<GameCommandResult> Command(GameConfig g, GameCommandConfig cmd, IReadOnlyDictionary<string, string>? input, CancellationToken ct)
+    {
+        if (_transition.ContainsKey(g.Key)) return new GameCommandResult(false, "The server is starting or stopping. Try again later.", null);
+        if (cmd.RequiresRunning)
+        {
+            string state;
+            try { state = await RawState(g, ct); }
+            catch (Exception ex) when (ex is not OperationCanceledException) { log.LogDebug(ex, "Status failed"); state = GameStates.Unknown; }
+            if (state != GameStates.Running) return new GameCommandResult(false, "The server is not running.", null);
+        }
+        return await runner.Run(g, cmd, input, ct);
+    }
+
+    // Runs the stop steps in order. A failed step does not stop the sequence. Returns true when the server stopped by itself.
+    private async Task<bool> RunStopSteps(GameConfig g, CancellationToken ct)
+    {
+        foreach (var step in catalog.For(g).StopSteps)
+        {
+            if (step.Command is { } id)
+            {
+                var cmd = catalog.Command(g, id);
+                if (cmd is null) { log.LogWarning("Stop step for {Key}: unknown command {Command}", g.Key, id); continue; }
+                var r = await runner.Run(g, cmd, step.Params, ct);
+                if (!r.Ok) log.LogWarning("Stop step {Command} for {Key} failed: {Message}", id, g.Key, r.Message);
+            }
+            if (step.Wait is > 0) await Task.Delay(TimeSpan.FromSeconds(Math.Min(step.Wait.Value, 600)), ct);
+            if (step.WaitForStop is > 0 && await WaitStopped(g, TimeSpan.FromSeconds(Math.Min(step.WaitForStop.Value, 600)), ct)) return true;
+        }
+        return false;
     }
 
     private async Task<bool> WaitStopped(GameConfig g, TimeSpan timeout, CancellationToken ct)

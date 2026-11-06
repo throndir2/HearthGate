@@ -1,0 +1,80 @@
+# Minecraft: Java Edition. Set in server.properties: enable-rcon=true, rcon.port=25575, rcon.password=<secret>.
+# The password comes from the env var below (or set channel.passwordEnv for each server).
+id: minecraft
+name: Minecraft (Java)
+channel:
+  type: rcon
+  address: 127.0.0.1:25575
+  passwordEnv: HG_MINECRAFT_RCON_PASSWORD
+commands:
+  - id: say
+    label: Send a message
+    template: "say {message}"
+    params:
+      - { name: message, label: Message, maxLength: 200 }
+  - id: list
+    label: Show players
+    template: "list"
+  - id: save
+    label: Save the world
+    template: "save-all"
+  - id: whitelist-add
+    label: Add to whitelist
+    template: "whitelist add {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+  - id: whitelist-remove
+    label: Remove from whitelist
+    template: "whitelist remove {player}"
+    confirm: true
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+  - id: kick
+    label: Kick a player
+    template: "kick {player} {reason}"
+    confirm: true
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+      - { name: reason, label: Reason, required: false, maxLength: 100 }
+  - id: time
+    label: Set the time
+    template: "time set {value}"
+    params:
+      - { name: value, label: Time, type: choice, options: [day, noon, night, midnight] }
+  - id: weather
+    label: Set the weather
+    template: "weather {value}"
+    params:
+      - { name: value, label: Weather, type: choice, options: [clear, rain, thunder] }
+  - id: ban
+    label: Ban a player
+    level: admin
+    confirm: true
+    template: "ban {player} {reason}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+      - { name: reason, label: Reason, required: false, maxLength: 100 }
+  - id: pardon
+    label: Remove a ban
+    level: admin
+    template: "pardon {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+  - id: op
+    label: Make operator
+    level: admin
+    confirm: true
+    template: "op {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+  - id: deop
+    label: Remove operator
+    level: admin
+    template: "deop {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_]{3,16}" }
+stopSteps:
+  - command: say
+    params: { message: "The server stops in 10 seconds." }
+    wait: 10
+  - command: save
