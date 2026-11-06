@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { api, type GameServer } from '../api'
+import { api, type GameCommand, type GameServer } from '../api'
 import { usePoll } from '../hooks'
 import { useSession } from '../session'
 import { Message } from '../components/AuthCard'
 import { ConfirmDialog, GameCard } from '../components/GameCard'
+import { GameCommandDialog } from '../components/GameCommandDialog'
 
 type Action = 'start' | 'stop' | 'restart'
 
@@ -14,6 +15,7 @@ export default function Games() {
   const [busy, setBusy] = useState<string | null>(null)
   const [msg, setMsg] = useState<[kind: 'ok' | 'error', text: string] | null>(null)
   const [pending, setPending] = useState<{ g: GameServer; action: Action } | null>(null)
+  const [command, setCommand] = useState<{ g: GameServer; cmd: GameCommand } | null>(null)
 
   async function run(g: GameServer, action: Action) {
     setPending(null); setBusy(g.id); setMsg(null)
@@ -38,7 +40,7 @@ export default function Games() {
       <div className="grid gap-4 md:grid-cols-2">
         {data?.map((g, i) => (
           <motion.div key={g.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <GameCard g={g} busy={busy === g.id} onAction={request} />
+            <GameCard g={g} busy={busy === g.id} onAction={request} onCommand={(g, cmd) => setCommand({ g, cmd })} />
           </motion.div>
         ))}
       </div>
@@ -51,6 +53,7 @@ export default function Games() {
         onConfirm={() => pending && run(pending.g, pending.action)}
         onCancel={() => setPending(null)}
       />
+      <GameCommandDialog target={command} onClose={() => setCommand(null)} />
     </div>
   )
 }

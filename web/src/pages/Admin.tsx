@@ -159,7 +159,7 @@ function Groups() {
   return (
     <div className="space-y-3">
       {(error || err) && <Message kind="error">{error || err}</Message>}
-      <p className="text-sm text-stone-500">To allow control of one game server only, add a permission like <code>games.control:palworld</code> with the field below each group.</p>
+      <p className="text-sm text-stone-500">To allow control of one game server only, add a permission like <code>games.control:palworld</code> with the field below each group. <code>games.admin:palworld</code> also allows the admin commands of that server (for example ban).</p>
       {data?.groups.map(g => (
         <div key={g.id} className="glass rounded-2xl p-4">
           <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ function Groups() {
             })}
           </div>
           <form className="mt-2 flex gap-2" onSubmit={e => { e.preventDefault(); const v = (e.currentTarget.elements.namedItem('p') as HTMLInputElement); toggle(g, v.value.trim()); v.value = '' }}>
-            <input name="p" className="input !min-h-9 !py-1.5 max-w-64 font-mono text-xs" placeholder="games.control:<id>" pattern="games\.control:[A-Za-z0-9_\-]+" />
+            <input name="p" className="input !min-h-9 !py-1.5 max-w-64 font-mono text-xs" placeholder="games.control:<id>" pattern="games\.(control|admin):[A-Za-z0-9_\-]+" />
             <button className="btn-outline !min-h-9"><Plus className="size-4" /></button>
           </form>
         </div>

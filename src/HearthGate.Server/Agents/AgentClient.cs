@@ -46,6 +46,16 @@ public sealed class AgentClient(IHttpClientFactory httpFactory, ConfigProvider c
         var result = await resp.Content.ReadFromJsonAsync<GameActionResult>(ct);
         return result ?? new GameActionResult(false, "No answer from the agent.");
     }
+
+    public async Task<GameCommandResult> GameCommand(string hostId, string agentKey, string commandId, Dictionary<string, string> parameters, CancellationToken ct)
+    {
+        var host = Host(hostId) ?? throw new InvalidOperationException("Unknown host.");
+        using var req = Request(host, HttpMethod.Post, $"/v1/games/{Uri.EscapeDataString(agentKey)}/commands/{Uri.EscapeDataString(commandId)}");
+        req.Content = JsonContent.Create(new GameCommandRequest(parameters));
+        using var resp = await httpFactory.CreateClient("agent-action").SendAsync(req, ct);
+        var result = await resp.Content.ReadFromJsonAsync<GameCommandResult>(ct);
+        return result ?? new GameCommandResult(false, "No answer from the agent.", null);
+    }
 }
 
 public sealed class AgentCache

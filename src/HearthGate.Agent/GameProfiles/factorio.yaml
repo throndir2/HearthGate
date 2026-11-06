@@ -1,0 +1,59 @@
+# Factorio. Start the server with --rcon-port 27015 --rcon-password <secret>.
+id: factorio
+name: Factorio
+channel:
+  type: rcon
+  address: 127.0.0.1:27015
+  passwordEnv: HG_FACTORIO_RCON_PASSWORD
+commands:
+  - id: say
+    label: Send a message
+    # Text without a leading slash goes to the chat as the server.
+    template: "{message}"
+    params:
+      - { name: message, label: Message, maxLength: 200, pattern: "[^/].*" }
+  - id: players
+    label: Show players
+    template: "/players online"
+  - id: save
+    label: Save the game
+    template: "/server-save"
+  - id: whitelist-add
+    label: Add to whitelist
+    template: "/whitelist add {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_\\-.]{1,60}" }
+  - id: kick
+    label: Kick a player
+    confirm: true
+    template: "/kick {player} {reason}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_\\-.]{1,60}" }
+      - { name: reason, label: Reason, required: false, maxLength: 100 }
+  - id: ban
+    label: Ban a player
+    level: admin
+    confirm: true
+    template: "/ban {player} {reason}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_\\-.]{1,60}" }
+      - { name: reason, label: Reason, required: false, maxLength: 100 }
+  - id: unban
+    label: Remove a ban
+    level: admin
+    template: "/unban {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_\\-.]{1,60}" }
+  - id: promote
+    label: Make admin
+    level: admin
+    confirm: true
+    template: "/promote {player}"
+    params:
+      - { name: player, label: Player name, pattern: "[A-Za-z0-9_\\-.]{1,60}" }
+stopSteps:
+  - command: say
+    params: { message: "The server stops in 10 seconds." }
+    wait: 10
+  - command: save
+    wait: 3

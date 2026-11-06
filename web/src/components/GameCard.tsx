@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Gamepad2, Play, RotateCw, Square, Users } from 'lucide-react'
-import { timeAgo, type GameServer } from '../api'
+import { Gamepad2, Play, RotateCw, ShieldAlert, Square, Terminal, Users } from 'lucide-react'
+import { timeAgo, type GameCommand, type GameServer } from '../api'
 import { ServiceIcon } from './Icon'
 
-// Owns: the game-server card (guest and member views) and the confirmation dialog for stop/restart.
+// Owns: the game-server card (guest and member views), its server-command buttons and the confirmation dialog for stop/restart.
 
 export const gameState: Record<GameServer['state'], { label: string; cls: string }> = {
   running: { label: 'Online', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
@@ -13,10 +13,11 @@ export const gameState: Record<GameServer['state'], { label: string; cls: string
   unknown: { label: 'Unknown', cls: 'bg-stone-500/10 text-stone-400' },
 }
 
-export function GameCard({ g, busy, onAction, compact = false }: {
+export function GameCard({ g, busy, onAction, onCommand, compact = false }: {
   g: GameServer
   busy?: boolean
   onAction?: (g: GameServer, action: 'start' | 'stop' | 'restart') => void
+  onCommand?: (g: GameServer, cmd: GameCommand) => void
   compact?: boolean
 }) {
   const s = gameState[g.state] ?? gameState.unknown
@@ -46,6 +47,20 @@ export function GameCard({ g, busy, onAction, compact = false }: {
           <button className="btn-primary" disabled={busy || g.state !== 'stopped'} onClick={() => onAction(g, 'start')}><Play className="size-4" />Start</button>
           <button className="btn-outline" disabled={busy || g.state !== 'running'} onClick={() => onAction(g, 'restart')}><RotateCw className="size-4" />Restart</button>
           <button className="btn-outline" disabled={busy || g.state !== 'running'} onClick={() => onAction(g, 'stop')}><Square className="size-4" />Stop</button>
+        </div>
+      )}
+      {!compact && onCommand && g.commands && g.commands.length > 0 && (
+        <div className="mt-4 border-t border-black/5 pt-3 dark:border-white/10">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-stone-500"><Terminal className="size-3.5" />Server commands</p>
+          <div className="flex flex-wrap gap-1.5">
+            {g.commands.map(c => (
+              <button key={c.id} className="btn-ghost !min-h-8 !px-2.5 !py-1 text-sm ring-1 ring-black/10 dark:ring-white/15"
+                disabled={busy || (c.requiresRunning && g.state !== 'running')} onClick={() => onCommand(g, c)}
+                title={c.description ?? (c.level === 'admin' ? 'Admin command' : undefined)}>
+                {c.level === 'admin' && <ShieldAlert className="size-3.5 text-amber-500" aria-label="Admin command" />}{c.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

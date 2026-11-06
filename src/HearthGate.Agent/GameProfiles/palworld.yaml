@@ -1,0 +1,61 @@
+# Palworld dedicated server REST API. Set RESTAPIEnabled=True and AdminPassword in PalWorldSettings.ini.
+# If the game also has palworldRest, its url, passwordEnv and settingsIni are used for this channel.
+id: palworld
+name: Palworld
+channel:
+  type: http
+  url: http://127.0.0.1:8212
+  auth: basic
+  username: admin
+  passwordEnv: HG_PALWORLD_ADMIN_PASSWORD
+  passwordIniKey: AdminPassword
+commands:
+  - id: announce
+    label: Send a message
+    path: /v1/api/announce
+    body: '{"message":"{message}"}'
+    params:
+      - { name: message, label: Message, maxLength: 200 }
+  - id: players
+    label: Show players
+    method: GET
+    path: /v1/api/players
+  - id: save
+    label: Save the world
+    path: /v1/api/save
+  - id: kick
+    label: Kick a player
+    confirm: true
+    path: /v1/api/kick
+    body: '{"userid":"{userid}","message":"{message}"}'
+    params:
+      - { name: userid, label: User ID (for example steam_7656...), pattern: "[A-Za-z0-9_\\-]{1,64}" }
+      - { name: message, label: Message, required: false, maxLength: 200 }
+  - id: ban
+    label: Ban a player
+    level: admin
+    confirm: true
+    path: /v1/api/ban
+    body: '{"userid":"{userid}","message":"{message}"}'
+    params:
+      - { name: userid, label: User ID, pattern: "[A-Za-z0-9_\\-]{1,64}" }
+      - { name: message, label: Message, required: false, maxLength: 200 }
+  - id: unban
+    label: Remove a ban
+    level: admin
+    path: /v1/api/unban
+    body: '{"userid":"{userid}"}'
+    params:
+      - { name: userid, label: User ID, pattern: "[A-Za-z0-9_\\-]{1,64}" }
+  - id: shutdown
+    hidden: true
+    path: /v1/api/shutdown
+    body: '{"waittime":{seconds},"message":"{message}"}'
+    params:
+      - { name: seconds, type: int, min: 1, max: 600, default: "30" }
+      - { name: message, required: false, maxLength: 200, default: "The server will restart soon. Please log out." }
+stopSteps:
+  - command: save
+  - command: shutdown
+    params: { seconds: "30" }
+    waitForStop: 75
