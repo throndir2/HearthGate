@@ -24,6 +24,7 @@ builder.WebHost.UseUrls(config.Listen);
 builder.WebHost.ConfigureKestrel(k => k.AddServerHeader = false);
 builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<HostReader>();
+builder.Services.AddSingleton<ContainerStatsReader>();
 builder.Services.AddSingleton<GameController>();
 builder.Services.AddSingleton<ControlScriptRunner>();
 builder.Services.AddSingleton<GameCommandCatalog>();

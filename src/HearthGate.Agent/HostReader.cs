@@ -6,7 +6,7 @@ using HearthGate.Contracts;
 namespace HearthGate.Agent;
 
 // Owns: reading host metrics (CPU, memory, disks, uptime) and container state. Read-only.
-public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactory)
+public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactory, ContainerStatsReader statsReader)
 {
     public async Task<HostSnapshot> Read(CancellationToken ct)
     {
@@ -39,6 +39,7 @@ public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactor
     {
         var client = httpFactory.CreateClient("docker");
         var list = await client.GetFromJsonAsync<List<DockerContainer>>(DockerHttp.BaseUrl(config.Docker!.Endpoint) + "/containers/json?all=true", ct) ?? [];
+        var stats = await statsReader.Read(list.Where(c => c.State == "running").Select(c => c.Id).ToList(), ct);
         return list.Select(c =>
         {
             var name = c.Names?.FirstOrDefault()?.TrimStart('/') ?? c.Id[..12];
@@ -50,7 +51,7 @@ public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactor
                 .Select(p => p.PublicPort == p.PrivatePort ? $"{p.PublicPort}/{p.Type}" : $"{p.PublicPort}->{p.PrivatePort}/{p.Type}")
                 .Distinct().OrderBy(p => int.Parse(p.Split('-', '/')[0])).ToList();
             var project = c.Labels?.GetValueOrDefault("com.docker.compose.project");
-            return new ContainerInfo(name, c.Image ?? "", c.State ?? "unknown", c.Status ?? "", health, ports, project);
+            return new ContainerInfo(name, c.Image ?? "", c.State ?? "unknown", c.Status ?? "", health, ports, project, stats.GetValueOrDefault(c.Id));
         }).OrderBy(c => c.Name).ToList();
     }
 
