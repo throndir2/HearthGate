@@ -44,6 +44,8 @@ builder.Services.AddSingleton<AgentClient>();
 builder.Services.AddSingleton<AgentCache>();
 builder.Services.AddSingleton<AgentPoller>();
 builder.Services.AddHostedService(sp => sp.GetRequiredService<AgentPoller>());
+builder.Services.AddSingleton<HostProbeStore>();
+builder.Services.AddHostedService<HostProbeService>();
 
 const string userAgent = "HearthGate/1.0 (+https://github.com/throndir2/HearthGate)";
 builder.Services.AddHttpClient("status", c => c.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent))

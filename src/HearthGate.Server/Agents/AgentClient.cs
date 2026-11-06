@@ -7,13 +7,14 @@ namespace HearthGate.Server.Agents;
 
 // Owns: talking to host agents and caching their snapshots. Agent URLs and tokens come only from config/env.
 
-public sealed record HostView(string Id, string Name, bool Online, DateTimeOffset? LastSeen, HostSnapshot? Snapshot);
+public sealed record HostView(string Id, string Name, bool HasAgent, bool Online, DateTimeOffset? LastSeen, HostSnapshot? Snapshot,
+    string? Address, HearthGate.Server.Status.HostReachability? Network);
 
 public sealed class AgentClient(IHttpClientFactory httpFactory, ConfigProvider config)
 {
     private HttpRequestMessage Request(HostConfig host, HttpMethod method, string path)
     {
-        var req = new HttpRequestMessage(method, host.AgentUrl.TrimEnd('/') + path);
+        var req = new HttpRequestMessage(method, host.AgentUrl!.TrimEnd('/') + path);
         var token = ConfigProvider.Secret(host.TokenEnv);
         if (!string.IsNullOrEmpty(token)) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return req;
@@ -64,7 +65,7 @@ public sealed class AgentPoller(ConfigProvider config, AgentClient client, Agent
     {
         while (!ct.IsCancellationRequested)
         {
-            await Task.WhenAll(config.Current.Hosts.Select(h => PollHost(h, ct)));
+            await Task.WhenAll(config.Current.Hosts.Where(h => !string.IsNullOrWhiteSpace(h.AgentUrl)).Select(h => PollHost(h, ct)));
             try { await _kick.WaitAsync(TimeSpan.FromSeconds(20), ct); } catch (OperationCanceledException) { }
         }
     }

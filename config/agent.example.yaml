@@ -4,7 +4,9 @@ listen: http://0.0.0.0:7177
 tokenEnv: HG_AGENT_TOKEN
 # Only these clients may call the agent (the HearthGate server). Empty = any client with the token.
 allowedClients: [192.168.50.9]
-# Read-only docker socket proxy (Linux hosts). Remove on hosts without Docker.
+# Docker (read-only). Remove on hosts without Docker.
+#   Linux: a read-only socket proxy:   endpoint: http://docker-proxy:2375
+#   Windows (Docker Desktop):          endpoint: npipe:////./pipe/docker_engine
 # docker:
 #   endpoint: http://docker-proxy:2375
 disks: []          # empty = all fixed drives (Windows) or "/" (Linux)

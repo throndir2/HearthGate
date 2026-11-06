@@ -98,11 +98,23 @@ export interface GameServer {
   canControl: boolean
 }
 
+export interface ContainerView { name: string; image: string; state: string; status: string; health?: string | null; ports?: string[] | null; project?: string | null }
+
 export interface HostView {
   id: string
   name: string
+  hasAgent: boolean
   online: boolean
   lastSeen?: string | null
+  address?: string | null
+  network?: {
+    reachable?: boolean | null
+    pingMs?: number | null
+    pingError?: string | null
+    ports: { port: number; open: boolean }[]
+    checkedAt: string
+    since?: string | null
+  } | null
   snapshot?: {
     os: string
     cpuPercent?: number | null
@@ -110,7 +122,7 @@ export interface HostView {
     memoryUsedBytes?: number | null
     uptimeSeconds: number
     disks: { name: string; totalBytes: number; freeBytes: number }[]
-    containers?: { name: string; image: string; state: string; status: string; health?: string | null }[] | null
+    containers?: ContainerView[] | null
     dockerError?: string | null
   } | null
 }

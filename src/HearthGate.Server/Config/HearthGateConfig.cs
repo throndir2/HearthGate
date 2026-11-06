@@ -73,8 +73,11 @@ public sealed class HostConfig
 {
     public string Id { get; set; } = "";
     public string Name { get; set; } = "";
-    public string AgentUrl { get; set; } = "";
+    public string? AgentUrl { get; set; } // optional: without an agent, only the network check runs
     public string TokenEnv { get; set; } = "";
+    public string? Address { get; set; } // IP or DNS name for the network check (ping + ports)
+    public List<int> Ports { get; set; } = []; // TCP ports to check, for example [22, 445]
+    public bool Ping { get; set; } = true;
 }
 
 public sealed class GameServerConfig

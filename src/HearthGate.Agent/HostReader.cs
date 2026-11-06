@@ -38,14 +38,19 @@ public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactor
     private async Task<List<ContainerInfo>> Containers(CancellationToken ct)
     {
         var client = httpFactory.CreateClient("docker");
-        var list = await client.GetFromJsonAsync<List<DockerContainer>>(config.Docker!.Endpoint.TrimEnd('/') + "/containers/json?all=true", ct) ?? [];
+        var list = await client.GetFromJsonAsync<List<DockerContainer>>(DockerHttp.BaseUrl(config.Docker!.Endpoint) + "/containers/json?all=true", ct) ?? [];
         return list.Select(c =>
         {
             var name = c.Names?.FirstOrDefault()?.TrimStart('/') ?? c.Id[..12];
             string? health = c.Status?.Contains("(healthy)") == true ? "healthy"
                 : c.Status?.Contains("(unhealthy)") == true ? "unhealthy"
                 : c.Status?.Contains("(health: starting)") == true ? "starting" : null;
-            return new ContainerInfo(name, c.Image ?? "", c.State ?? "unknown", c.Status ?? "", health);
+            // Published ports only (host side), for example "8080->80/tcp". IPv4 and IPv6 entries are merged.
+            var ports = (c.Ports ?? []).Where(p => p.PublicPort is > 0)
+                .Select(p => p.PublicPort == p.PrivatePort ? $"{p.PublicPort}/{p.Type}" : $"{p.PublicPort}->{p.PrivatePort}/{p.Type}")
+                .Distinct().OrderBy(p => int.Parse(p.Split('-', '/')[0])).ToList();
+            var project = c.Labels?.GetValueOrDefault("com.docker.compose.project");
+            return new ContainerInfo(name, c.Image ?? "", c.State ?? "unknown", c.Status ?? "", health, ports, project);
         }).OrderBy(c => c.Name).ToList();
     }
 
@@ -56,6 +61,15 @@ public sealed class HostReader(AgentConfig config, IHttpClientFactory httpFactor
         public string? Image { get; set; }
         public string? State { get; set; }
         public string? Status { get; set; }
+        public List<DockerPort>? Ports { get; set; }
+        public Dictionary<string, string>? Labels { get; set; }
+    }
+
+    private sealed class DockerPort
+    {
+        public int PrivatePort { get; set; }
+        public int? PublicPort { get; set; }
+        public string Type { get; set; } = "tcp";
     }
 
     // ---- CPU ----

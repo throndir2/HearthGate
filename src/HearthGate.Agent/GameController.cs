@@ -215,7 +215,7 @@ public sealed class GameController(AgentConfig config, IHttpClientFactory httpFa
     private async Task<string> Docker(HttpMethod method, string path, CancellationToken ct)
     {
         if (config.Docker is not { Endpoint.Length: > 0 }) throw new InvalidOperationException("Docker is not configured.");
-        using var req = new HttpRequestMessage(method, config.Docker.Endpoint.TrimEnd('/') + path);
+        using var req = new HttpRequestMessage(method, DockerHttp.BaseUrl(config.Docker.Endpoint) + path);
         using var resp = await httpFactory.CreateClient("docker").SendAsync(req, ct);
         if (!resp.IsSuccessStatusCode && (int)resp.StatusCode != 304) resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadAsStringAsync(ct);
