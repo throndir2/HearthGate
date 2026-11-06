@@ -78,6 +78,9 @@ public sealed class HostConfig
     public string? Address { get; set; } // IP or DNS name for the network check (ping + ports)
     public List<int> Ports { get; set; } = []; // TCP ports to check, for example [22, 445]
     public bool Ping { get; set; } = true;
+    public string? LinkAddress { get; set; } // optional: host name for links to published ports, for example a Tailscale MagicDNS name
+    public string LinkScheme { get; set; } = "http";
+    public List<LinkConfig> Links { get; set; } = []; // extra links; a url that starts with ":" or "/" is relative to linkAddress
 }
 
 public sealed class GameServerConfig

@@ -143,6 +143,8 @@ export interface HostView {
   online: boolean
   lastSeen?: string | null
   address?: string | null
+  linkBase?: string | null
+  links: { label: string; url: string }[]
   network?: {
     reachable?: boolean | null
     pingMs?: number | null

@@ -54,6 +54,9 @@ services:
 # address: IP or DNS name for the network check (ping every 30 s). ports: TCP ports to check too.
 # agentUrl (optional): the host agent, for CPU, memory, disks and Docker containers. Reach it only on the private network.
 # A host without agentUrl gets only the network check.
+# linkAddress (optional): a name that your browser can reach, for example a Tailscale MagicDNS name.
+#   Then each published TCP port of a running container is a link (linkScheme://linkAddress:port).
+# links (optional): extra links. A url that starts with ":" or "/" is relative to linkAddress.
 hosts:
   - id: nas
     name: NAS
@@ -61,6 +64,10 @@ hosts:
     ports: [22, 445]
     agentUrl: http://hearthgate-agent:7177
     tokenEnv: HG_AGENT_NAS_TOKEN
+    # linkAddress: nas.example-tailnet.ts.net
+    # linkScheme: http
+    # links:
+    #   - { label: Plex, url: ":32400/web" }      # host-network containers publish no ports
   - id: router
     name: Router
     address: 192.168.1.1

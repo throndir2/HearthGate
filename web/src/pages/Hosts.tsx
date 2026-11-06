@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { Boxes, Cpu, HardDrive, MemoryStick, Network, Server, TriangleAlert } from 'lucide-react'
+import { Boxes, Cpu, ExternalLink, HardDrive, MemoryStick, Network, Server, TriangleAlert } from 'lucide-react'
 import { bytes, timeAgo, type ContainerView, type HostView } from '../api'
 import { usePoll } from '../hooks'
 import { Message } from '../components/AuthCard'
@@ -106,6 +106,16 @@ function hostIsDown(h: HostView) {
   return h.network?.reachable === false || (h.hasAgent && !h.online)
 }
 
+// Published TCP port (for example "8080->80/tcp") to a link on the host's link address.
+function portLink(base: string, p: string) {
+  if (!p.endsWith('/tcp')) return null
+  const port = p.split(/[-/]/)[0]
+  const url = new URL(base)
+  if (port === '443' || port === '8443') url.protocol = 'https:'
+  url.port = port
+  return url.origin + '/'
+}
+
 export default function Hosts() {
   const { data, error } = usePoll<HostView[]>('/api/hosts', 15000)
   const [filter, setFilter] = useState('')
@@ -191,6 +201,20 @@ export default function Hosts() {
                 {[h.address, s ? `${s.os} · up ${uptime(s.uptimeSeconds)}` : null, h.hasAgent ? `agent ${timeAgo(h.lastSeen)}` : null].filter(Boolean).join(' · ')}
               </span>
             </div>
+            {(h.linkBase || h.links.length > 0) && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                {h.linkBase && (
+                  <a href={h.linkBase} target="_blank" rel="noreferrer" className={`flex items-center gap-1 rounded-md px-2 py-0.5 font-mono text-xs hover:underline ${neutral}`} title="Link address of this host">
+                    <ExternalLink className="size-3" />{new URL(h.linkBase).host}
+                  </a>
+                )}
+                {h.links.map(l => (
+                  <a key={l.label + l.url} href={l.url} target="_blank" rel="noreferrer" className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-xs hover:underline ${neutral}`} title={l.url}>
+                    <ExternalLink className="size-3" />{l.label}
+                  </a>
+                ))}
+              </div>
+            )}
             {h.network && h.network.ports.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {h.network.ports.map(p => (
@@ -220,7 +244,15 @@ export default function Hosts() {
                       <span className={`size-2 shrink-0 rounded-full ${isProblem(c) ? 'bg-red-500' : c.state !== 'running' ? 'bg-stone-400' : c.health === 'starting' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                       <span className="truncate">{c.name}</span>
                       {c.ports && c.ports.length > 0 && (
-                        <span className="hidden truncate font-mono text-xs text-stone-500 sm:inline">{c.ports.map(p => p.replace('/tcp', '')).join(', ')}</span>
+                        <span className="hidden truncate font-mono text-xs text-stone-500 sm:inline">
+                          {c.ports.map((p, i) => {
+                            const label = p.replace('/tcp', '')
+                            const href = h.linkBase && c.state === 'running' ? portLink(h.linkBase, p) : null
+                            return <span key={p}>{i > 0 && ', '}{href
+                              ? <a href={href} target="_blank" rel="noreferrer" className="text-accent hover:underline" title={`Open ${href}`}>{label}</a>
+                              : label}</span>
+                          })}
+                        </span>
                       )}
                       {c.stats && (
                         <span className={`ml-auto shrink-0 font-mono text-xs ${isHog(c) ? 'text-amber-500' : 'text-stone-500'}`}>

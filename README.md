@@ -77,7 +77,7 @@ See [`config/hearthgate.example.yaml`](config/hearthgate.example.yaml). Main sec
 | `site` | Title, tagline, accent color, logo, footer links |
 | `categories` | Filter chips on the home page |
 | `services` | Cards: `url` is the public link; `check.target` is the internal address that the server checks; `visibility` is `public`, `users` or `admins` |
-| `hosts` | Servers on the Hosts page: `address` and `ports` for the network check (ping and TCP), and an optional `agentUrl` plus the env var that holds the agent token |
+| `hosts` | Servers on the Hosts page: `address` and `ports` for the network check (ping and TCP), and an optional `agentUrl` plus the env var that holds the agent token. Optional `linkAddress` (for example a Tailscale name) makes each published container port a link; optional `links` adds more links |
 | `gameServers` | Game servers: the host and the `agentKey` in that agent's config |
 | `github` | Owner, include/exclude lists, `hostedSites` (repos that have their own site are hidden) |
 | `auth` | Local login, account requests, admin TOTP rule, session length, groups, optional `oidc` |
