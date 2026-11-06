@@ -7,7 +7,7 @@ A self-hosted home page for your services. Guests can see links and status. Appr
 - **Projects.** Your public GitHub repositories that have no website of their own.
 - **Accounts.** No open sign-up. Visitors request an account; an admin approves it.
 - **Permissions.** Groups give permissions such as `status.details`, `games.control:palworld` or `hosts.view`.
-- **Hosts and game servers.** A small agent on each host reports CPU, memory, disks and Docker containers, and starts or stops allow-listed game servers.
+- **Hosts and game servers.** The Hosts page (admins and `hosts.view`) shows each server on your network: reachable or not (ping and TCP ports), and, with the small agent, CPU, memory, disks and all Docker containers with their state, health and published ports. The agent also starts or stops allow-listed game servers.
 - **Optional OIDC.** Sign in with Authentik (or any OIDC provider) and link it to an existing account. HearthGate works fully without it.
 - **Modern UI.** Dark and light themes, animations (they respect "reduce motion"), mobile first.
 
@@ -77,7 +77,7 @@ See [`config/hearthgate.example.yaml`](config/hearthgate.example.yaml). Main sec
 | `site` | Title, tagline, accent color, logo, footer links |
 | `categories` | Filter chips on the home page |
 | `services` | Cards: `url` is the public link; `check.target` is the internal address that the server checks; `visibility` is `public`, `users` or `admins` |
-| `hosts` | Agents: `agentUrl` and the env var that holds the token |
+| `hosts` | Servers on the Hosts page: `address` and `ports` for the network check (ping and TCP), and an optional `agentUrl` plus the env var that holds the agent token |
 | `gameServers` | Game servers: the host and the `agentKey` in that agent's config |
 | `github` | Owner, include/exclude lists, `hostedSites` (repos that have their own site are hidden) |
 | `auth` | Local login, account requests, admin TOTP rule, session length, groups, optional `oidc` |
@@ -104,7 +104,7 @@ The agent gives HearthGate host health and game-server control. It listens on th
 
 **Linux (Docker host):** use the `hearthgate-agent` and `docker-proxy` services in the compose example.
 
-**Windows (game PC):** download `HearthGate.Agent-win-x64.zip` from the releases and unzip it. Edit `agent.yaml`, then run in PowerShell (not elevated):
+**Windows (game PC):** download `HearthGate.Agent-win-x64.zip` from the releases and unzip it. Edit `agent.yaml` (for Docker Desktop containers, set `docker.endpoint: npipe:////./pipe/docker_engine`), then run in PowerShell (not elevated):
 
 ```powershell
 & "C:\Downloads\agent-win-x64\Install-HearthGateAgent.ps1" -SourceDir "C:\Downloads\agent-win-x64" -Token "<same token as in the server .env>" -AllowFrom 192.168.50.9

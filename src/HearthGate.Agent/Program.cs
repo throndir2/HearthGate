@@ -26,7 +26,8 @@ builder.Services.AddSingleton(config);
 builder.Services.AddSingleton<HostReader>();
 builder.Services.AddSingleton<GameController>();
 builder.Services.AddSingleton<ControlScriptRunner>();
-builder.Services.AddHttpClient("docker", c => c.Timeout = TimeSpan.FromSeconds(70));
+builder.Services.AddHttpClient("docker", c => c.Timeout = TimeSpan.FromSeconds(70))
+    .ConfigurePrimaryHttpMessageHandler(() => DockerHttp.Handler(config.Docker?.Endpoint));
 builder.Services.AddHttpClient("game", c => c.Timeout = TimeSpan.FromSeconds(10));
 
 var app = builder.Build();

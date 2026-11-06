@@ -63,14 +63,16 @@ public static class OperationsEndpoints
             return Results.Json(new { ok = true, message = $"The {action} request was sent. The status updates in a short time." }, statusCode: 202);
         }).RequireRateLimiting("action");
 
-        app.MapGet("/api/hosts", (HttpContext ctx, ConfigProvider config, AgentCache cache) =>
+        app.MapGet("/api/hosts", (HttpContext ctx, ConfigProvider config, AgentCache cache, HearthGate.Server.Status.HostProbeStore probes) =>
         {
             if (!ctx.Hg().Has(Permissions.HostsView)) return Results.Forbid();
             return Results.Ok(config.Current.Hosts.Select(h =>
             {
                 cache.Hosts.TryGetValue(h.Id, out var entry);
+                probes.Items.TryGetValue(h.Id, out var network);
                 var online = entry.Snapshot is not null && DateTimeOffset.UtcNow - entry.At < TimeSpan.FromMinutes(2);
-                return new HostView(h.Id, h.Name, online, entry.Snapshot is null ? null : entry.At, entry.Snapshot);
+                return new HostView(h.Id, h.Name, !string.IsNullOrWhiteSpace(h.AgentUrl), online, entry.Snapshot is null ? null : entry.At,
+                    entry.Snapshot, h.Address, network);
             }));
         });
     }

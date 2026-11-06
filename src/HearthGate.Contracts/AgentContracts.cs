@@ -14,7 +14,8 @@ public sealed record HostSnapshot(
 
 public sealed record DiskInfo(string Name, long TotalBytes, long FreeBytes);
 
-public sealed record ContainerInfo(string Name, string Image, string State, string Status, string? Health);
+public sealed record ContainerInfo(string Name, string Image, string State, string Status, string? Health,
+    IReadOnlyList<string>? Ports = null, string? Project = null);
 
 public sealed record GameServerStatus(
     string Key,

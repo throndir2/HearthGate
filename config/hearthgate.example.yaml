@@ -50,12 +50,21 @@ services:
     visibility: users
     check: { type: tcp, target: "192.168.1.10:8080" }
 
-# Host agents. Reach them only on the private network. The token is in the named env var.
+# Hosts. HearthGate shows them on the Hosts page (permission hosts.view; admins have it).
+# address: IP or DNS name for the network check (ping every 30 s). ports: TCP ports to check too.
+# agentUrl (optional): the host agent, for CPU, memory, disks and Docker containers. Reach it only on the private network.
+# A host without agentUrl gets only the network check.
 hosts:
   - id: nas
     name: NAS
+    address: 192.168.1.10
+    ports: [22, 445]
     agentUrl: http://hearthgate-agent:7177
     tokenEnv: HG_AGENT_NAS_TOKEN
+  - id: router
+    name: Router
+    address: 192.168.1.1
+    # ping: false       # set when the host does not answer ping; then the ports decide
 
 # Game servers are controlled through the agent on their host. agentKey must exist in that agent's config.
 gameServers: []
