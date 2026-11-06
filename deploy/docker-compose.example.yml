@@ -8,7 +8,8 @@
 #      HG_GITHUB_TOKEN=                              # optional
 #      HG_OIDC_CLIENT_SECRET=                        # optional
 #      HG_PALWORLD_ADMIN_PASSWORD=                   # not used here; it belongs on the game PC
-# 4. sudo chown -R 1654:1654 ./data   (the containers run as the non-root "app" user, uid 1654)
+# 4. sudo chown -R 1654:1654 ./data ./agent   (the containers run as the non-root "app" user, uid 1654;
+#    if the agent cannot read agent.yaml it runs without Docker and shows no containers)
 # 5. docker compose up -d, then put a reverse proxy (with TLS) in front of the published port.
 name: hearthgate
 

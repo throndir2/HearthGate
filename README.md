@@ -61,7 +61,7 @@ The site is public, so the guest surface is small:
 2. Copy `config/hearthgate.example.yaml` to `./data/hearthgate.yaml` and edit it.
 3. Copy `config/agent.example.yaml` to `./agent/agent.yaml`. For a Docker host, set `docker.endpoint: http://docker-proxy:2375` and remove the example game.
 4. Create `.env` with a random agent token: `HG_AGENT_NAS_TOKEN=<at least 24 random characters>`.
-5. Give the data folder to the container user: `sudo chown -R 1654:1654 ./data`.
+5. Give the data and agent folders to the container user: `sudo chown -R 1654:1654 ./data ./agent`. If the agent cannot read `agent.yaml`, it runs without Docker and the Hosts page shows no containers. On a NAS whose share ACLs block `sudo chown`, run it in a container: `docker run --rm -v "$PWD/agent:/a" alpine chown -R 1654:1654 /a`.
 6. Start it: `docker compose up -d`.
 7. Open the link in `./data/first-admin-link.txt` (through your proxy) to set the admin password. Delete the file after use.
 8. Sign in, open **Profile**, and turn on two-step sign-in. Then the **Admin** page works.
