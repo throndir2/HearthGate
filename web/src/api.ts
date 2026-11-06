@@ -98,7 +98,17 @@ export interface GameServer {
   canControl: boolean
 }
 
-export interface ContainerView { name: string; image: string; state: string; status: string; health?: string | null; ports?: string[] | null; project?: string | null }
+export interface ContainerStats {
+  cpuPercent?: number | null
+  memoryBytes: number
+  memoryLimitBytes?: number | null
+  netRxBytesPerSec?: number | null
+  netTxBytesPerSec?: number | null
+  diskReadBytesPerSec?: number | null
+  diskWriteBytesPerSec?: number | null
+}
+
+export interface ContainerView { name: string; image: string; state: string; status: string; health?: string | null; ports?: string[] | null; project?: string | null; stats?: ContainerStats | null }
 
 export interface HostView {
   id: string
