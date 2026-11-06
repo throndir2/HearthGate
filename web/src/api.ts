@@ -96,7 +96,33 @@ export interface GameServer {
   version?: string | null
   updatedAt?: string | null
   canControl: boolean
+  commands?: GameCommand[] | null
 }
+
+export interface GameCommandParam {
+  name: string
+  label: string
+  type: 'text' | 'int' | 'choice'
+  required: boolean
+  maxLength?: number | null
+  min?: number | null
+  max?: number | null
+  options?: string[] | null
+  default?: string | null
+  pattern?: string | null
+}
+
+export interface GameCommand {
+  id: string
+  label: string
+  description?: string | null
+  level: 'control' | 'admin'
+  confirm: boolean
+  requiresRunning: boolean
+  params: GameCommandParam[]
+}
+
+export interface GameCommandResult { ok: boolean; message: string; output?: string | null }
 
 export interface ContainerStats {
   cpuPercent?: number | null

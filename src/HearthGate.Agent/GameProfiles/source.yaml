@@ -1,0 +1,38 @@
+# Source-engine servers (Counter-Strike 2, Team Fortress 2, Garry's Mod and others). Set rcon_password on the server.
+id: source
+name: Source engine
+channel:
+  type: rcon
+  address: 127.0.0.1:27015
+  passwordEnv: HG_SOURCE_RCON_PASSWORD
+commands:
+  - id: say
+    label: Send a message
+    template: "say {message}"
+    params:
+      - { name: message, label: Message, maxLength: 200 }
+  - id: status
+    label: Show status
+    template: "status"
+  - id: kick
+    label: Kick a player
+    confirm: true
+    template: "kick {player}"
+    params:
+      - { name: player, label: Player name, maxLength: 64, pattern: "[^\"]+" }
+  - id: changelevel
+    label: Change the map
+    level: admin
+    confirm: true
+    template: "changelevel {map}"
+    params:
+      - { name: map, label: Map name, pattern: "[A-Za-z0-9_\\-]{1,64}" }
+  - id: restart-round
+    label: Restart the round
+    level: admin
+    confirm: true
+    template: "mp_restartgame 1"
+stopSteps:
+  - command: say
+    params: { message: "The server stops in 10 seconds." }
+    wait: 10

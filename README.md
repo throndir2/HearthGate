@@ -6,7 +6,7 @@ A self-hosted home page for your services. Guests can see links and status. Appr
 - **Status.** Background checks (HTTP or TCP) show up, slow or down. Guests see only a coarse state.
 - **Projects.** Your public GitHub repositories that have no website of their own.
 - **Accounts.** No open sign-up. Visitors request an account; an admin approves it.
-- **Permissions.** Groups give permissions such as `status.details`, `games.control:palworld` or `hosts.view`.
+- **Permissions.** Groups give permissions such as `status.details`, `games.control:palworld`, `games.admin:palworld` or `hosts.view`.
 - **Hosts and game servers.** The Hosts page (admins and `hosts.view`) shows each server on your network: reachable or not (ping and TCP ports), and, with the small agent, CPU, memory, disks and all Docker containers with their state, health and published ports. The agent also starts or stops allow-listed game servers.
 - **Optional OIDC.** Sign in with Authentik (or any OIDC provider) and link it to an existing account. HearthGate works fully without it.
 - **Modern UI.** Dark and light themes, animations (they respect "reduce motion"), mobile first.
@@ -123,7 +123,40 @@ Game server kinds:
 
 For Palworld, `palworldRest` (with `RESTAPIEnabled=True` in `PalWorldSettings.ini`) adds the player list and the version. Use `settingsIni` to read the admin password from the INI file, or `passwordEnv` for an env var.
 
-Guests see each game server with **Online** or **Offline** only. `games.view` adds players, version and the connect address. The connect address shows to guests only with `connectInfoPublic: true`. Set `visibility` (`public`, `users`, `admins`) to hide a server. Start, stop and restart need `games.control:<id>` or `games.control:*`. These actions run in the background, so a long graceful stop does not hit proxy time limits, and both the request and the result go to the audit log.
+### Server commands
+
+Each game server can have its own commands, for example "Send a message", "Kick a player" or "Save the world". Users with control see them as buttons on the Games page. A button opens a form for the values of the command and shows the answer of the game server.
+
+The commands are set in `agent.yaml`, on the host. The HearthGate server sends only a command ID and values. It never sends free command text. The agent checks each value (type, length, list of options, pattern) before it puts the value into the command. Text values cannot contain line breaks. Text values for `rcon` and `script` channels cannot contain a semicolon, because Source-engine consoles run each part as a separate command.
+
+A **channel** tells the agent how to send commands:
+
+| Channel | Use |
+|---|---|
+| `rcon` | The Source RCON protocol (`address: host:port`). Minecraft, ARK, Factorio, Counter-Strike 2 and many other games use it. |
+| `http` | An HTTP API, for example the Palworld REST API (`url`, `auth: none, basic or bearer`, `username`). Each command sets `method`, `path` and an optional JSON `body`. |
+| `script` | Your control script. The agent runs `<script> -Server <scriptServer> -Action Command -Command "<command text>"`. The output of the script is the answer. |
+
+Passwords come from the environment variable in `passwordEnv`. When it is empty, `passwordIni` and `passwordIniKey` can read the password from the settings file of the game.
+
+A **profile** gives a ready set of commands, a channel and stop steps. Set `profile:` on the game. Built-in profiles: `minecraft`, `palworld`, `factorio`, `source` (Counter-Strike 2, Team Fortress 2, Garry's Mod) and `ark-ascended`. The files are in `src/HearthGate.Agent/GameProfiles/`. To add or change a profile, put a YAML file with the same format in the `game-profiles` folder next to `agent.yaml` (or set `profilesDir`). A profile in that folder replaces a built-in profile with the same `id`.
+
+Values on the game override the profile: `channel` fields replace profile fields one by one, a command with the same `id` replaces the profile command, and `disabled: true` removes a profile command. If the game has `palworldRest` and no `channel`, the Palworld profile uses its URL and password.
+
+Each command has `id`, `label`, an optional `description`, and:
+
+- `template` (rcon and script), for example `"kick {player} {reason}"`, or `method`, `path` and `body` (http), for example `'{"message":"{message}"}'`.
+- `params`: each has `name`, `label`, `type` (`text`, `int` or `choice`), `required`, and `maxLength` and `pattern` (text), `min` and `max` (int), or `options` (choice). `default` is optional.
+- `level`: `control` (default) needs `games.control:<id>`. `admin` needs `games.admin:<id>`.
+- `confirm: true` shows a warning and a red Run button.
+- `requiresRunning: false` lets the command run while the server is stopped (for example a backup script).
+- `hidden: true` keeps the command out of the UI. Only stop steps can use it.
+
+**Stop steps** run in order before a stop or a restart, when the server is running. A step can run a command (`command` and `params`), wait (`wait: <seconds>`), or wait until the server stops by itself (`waitForStop: <seconds>`). If the server stopped, the normal stop is not necessary. Set `stopSteps: []` on a game to turn off the profile steps. When stop steps are set, they replace the built-in Palworld save and shutdown of `palworldRest`.
+
+Each command and its values go to the audit log, with the result.
+
+Guests see each game server with **Online** or **Offline** only. `games.view` adds players, version and the connect address. The connect address shows to guests only with `connectInfoPublic: true`. Set `visibility` (`public`, `users`, `admins`) to hide a server. Start, stop, restart and server commands need `games.control:<id>` or `games.control:*`. Admin commands need `games.admin:<id>` or `games.admin:*`, which also give control. These actions run in the background, so a long graceful stop does not hit proxy time limits, and both the request and the result go to the audit log.
 
 ## Optional OIDC (Authentik or other providers)
 

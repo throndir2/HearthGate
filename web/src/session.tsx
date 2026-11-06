@@ -33,7 +33,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const can = useCallback((p: string) => !!user && (user.permissions.includes('admin') || user.permissions.includes(p)
-    || (p.startsWith('games.control:') && user.permissions.includes('games.control:*'))), [user])
+    || (p.startsWith('games.control:') && (user.permissions.includes('games.control:*') || user.permissions.includes('games.admin:*')
+      || user.permissions.includes(`games.admin:${p.slice('games.control:'.length)}`)))
+    || (p.startsWith('games.admin:') && user.permissions.includes('games.admin:*'))), [user])
 
   return <Ctx.Provider value={{ site, user, loading, refresh, can }}>{children}</Ctx.Provider>
 }

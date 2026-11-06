@@ -16,10 +16,13 @@ public static class Permissions
     public const string ServicesPrivate = "services.private";
     public const string GamesView = "games.view";
     public const string GamesControlAll = "games.control:*";
+    public const string GamesAdminAll = "games.admin:*";
     public const string HostsView = "hosts.view";
     public static string GamesControl(string serverId) => $"games.control:{serverId}";
+    // games.admin also gives games.control for the same server.
+    public static string GamesAdmin(string serverId) => $"games.admin:{serverId}";
 
-    public static readonly string[] Catalog = [StatusDetails, ServicesPrivate, GamesView, GamesControlAll, HostsView];
+    public static readonly string[] Catalog = [StatusDetails, ServicesPrivate, GamesView, GamesControlAll, GamesAdminAll, HostsView];
 }
 
 public sealed class UserContext
@@ -40,7 +43,10 @@ public sealed class UserContext
     public bool Has(string permission) =>
         IsAdminActive
         || Grants.Contains(permission)
-        || (permission.StartsWith("games.control:", StringComparison.OrdinalIgnoreCase) && Grants.Contains(Permissions.GamesControlAll));
+        || (permission.StartsWith("games.control:", StringComparison.OrdinalIgnoreCase)
+            && (Grants.Contains(Permissions.GamesControlAll) || Grants.Contains(Permissions.GamesAdminAll)
+                || Grants.Contains("games.admin:" + permission["games.control:".Length..])))
+        || (permission.StartsWith("games.admin:", StringComparison.OrdinalIgnoreCase) && Grants.Contains(Permissions.GamesAdminAll));
 
     public bool CanSee(string visibility) => visibility switch
     {

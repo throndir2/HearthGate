@@ -96,7 +96,8 @@ auth:
   requireAdminTotp: true
   sessionHours: 168
   # Groups are created at first start if missing. Permissions:
-  # status.details, services.private, games.view, games.control:*, games.control:<serverId>, hosts.view
+  # status.details, services.private, games.view, games.control:*, games.control:<serverId>,
+  # games.admin:*, games.admin:<serverId> (admin server commands; includes games.control), hosts.view
   groups:
     - { name: Members, permissions: [] }
     - { name: Trusted, permissions: [status.details, services.private, games.view] }
