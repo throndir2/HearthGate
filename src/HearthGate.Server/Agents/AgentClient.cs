@@ -8,7 +8,7 @@ namespace HearthGate.Server.Agents;
 // Owns: talking to host agents and caching their snapshots. Agent URLs and tokens come only from config/env.
 
 public sealed record HostView(string Id, string Name, bool HasAgent, bool Online, DateTimeOffset? LastSeen, HostSnapshot? Snapshot,
-    string? Address, HearthGate.Server.Status.HostReachability? Network);
+    string? Address, HearthGate.Server.Status.HostReachability? Network, string? LinkBase, IReadOnlyList<LinkConfig> Links);
 
 public sealed class AgentClient(IHttpClientFactory httpFactory, ConfigProvider config)
 {

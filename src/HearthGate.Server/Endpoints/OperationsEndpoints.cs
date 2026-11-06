@@ -101,8 +101,15 @@ public static class OperationsEndpoints
                 cache.Hosts.TryGetValue(h.Id, out var entry);
                 probes.Items.TryGetValue(h.Id, out var network);
                 var online = entry.Snapshot is not null && DateTimeOffset.UtcNow - entry.At < TimeSpan.FromMinutes(2);
+                // Links to the host's services, for example through Tailscale. Only users with hosts.view see them.
+                var linkBase = string.IsNullOrWhiteSpace(h.LinkAddress) ? null : $"{h.LinkScheme}://{h.LinkAddress.Trim()}";
+                var links = h.Links.Select(l => new LinkConfig
+                {
+                    Label = l.Label,
+                    Url = linkBase is not null && (l.Url.StartsWith(':') || l.Url.StartsWith('/')) ? linkBase + l.Url : l.Url,
+                }).ToList();
                 return new HostView(h.Id, h.Name, !string.IsNullOrWhiteSpace(h.AgentUrl), online, entry.Snapshot is null ? null : entry.At,
-                    entry.Snapshot, h.Address, network);
+                    entry.Snapshot, h.Address, network, linkBase, links);
             }));
         });
     }
