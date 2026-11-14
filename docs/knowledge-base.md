@@ -3,7 +3,7 @@
 **Status:** Partial
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against 6a23bc5
+**Last verified:** 2026-11-14 against 95892be
 **Code:** `.github/mcp.json`
 
 The knowledge base (KB) is the repository's Markdown documentation. It is the source of truth for current behavior.
@@ -38,6 +38,7 @@ Each Markdown page starts with an H1 title. Put these fields directly below it:
 ```
 
 Use `Implemented`, `Partial`, `Planned`, or `Superseded` for status.
+Use UTC calendar dates for verification and update fields.
 The verified SHA identifies the source revision inspected, not the future commit that contains the page.
 Refresh the verification line when you check or change a claim.
 A page about built behavior must name its main source files or folders in `Code`.

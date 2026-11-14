@@ -1,16 +1,25 @@
 # HearthGate knowledge base
 
-**Status:** Partial
+**Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against 6a23bc5
-**Code:** `src/HearthGate.Server/`, `src/HearthGate.Agent/`, `src/HearthGate.Contracts/`, `web/`, `config/`, `deploy/`, `Dockerfile`, `Dockerfile.agent`
+**Last verified:** 2026-11-14 against 95892be
+**Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`
 
 Use this map before you read source files. The pages describe the current code, not an intended design.
 
 ## Pages
 
 - [Knowledge base contract](knowledge-base.md): How do agents search, verify, and maintain the documentation?
+- [Server and API](server.md): Where do requests, database records, and admin operations live?
+- [Accounts and security](accounts.md): How do sign-in, permissions, OIDC, and request protection work?
+- [Status and host probes](status.md): How do background checks, history, and agent caches work?
+- [GitHub showcase](github.md): Which repositories appear, and how does the cache refresh?
+- [Configuration](configuration.md): Which YAML keys and environment variables control the product?
+- [Host agent](agent.md): How does the agent read metrics and protect its API?
+- [Game control and commands](games.md): How do lifecycle actions, profiles, channels, and stop steps work?
+- [Browser UI](web.md): Where do routes, session state, polling, and UI controls live?
+- [Development and packaging](development.md): How do local builds, container packaging, and the Windows installer work?
 
 ## Code map
 
@@ -26,6 +35,8 @@ Use this map before you read source files. The pages describe the current code, 
 | How does the browser display the site? | `web/src/` |
 | How are containers and the Windows agent packaged? | `Dockerfile`, `Dockerfile.agent`, `deploy/` |
 
-## Planned
+## Other documentation
 
-The documentation audit will add verified pages for these areas and replace stale claims in the root README.
+The root [README](../README.md) is the product overview.
+The checked-in [.github/copilot-instructions.md](../.github/copilot-instructions.md) contains repository working rules.
+Examples live in `config` and `deploy`; they are configuration inputs, not generated KB pages.
