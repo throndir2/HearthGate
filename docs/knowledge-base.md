@@ -4,7 +4,7 @@
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
 **Last verified:** 2026-11-14 against 95892be
-**Code:** `.github/mcp.json`
+**Code:** `.github/mcp.json`, `scripts/kb/`
 
 The knowledge base (KB) is the repository's Markdown documentation. It is the source of truth for current behavior.
 The source code supplies the evidence used to verify each page.
@@ -63,7 +63,25 @@ Generated pages must name their generator and its command.
 Change the generator or its input, then generate the page again. Never edit generated pages by hand.
 This repository currently has no generated KB pages.
 
+## Local check
+
+Run `python scripts/kb/check_kb.py` from the repository root.
+Before merge, run `python scripts/kb/check_kb.py --diff origin/main` after fetching the target branch.
+The check uses the merge base and includes tracked working-tree changes.
+
+Missing `Code` paths and missing documentation index entries are errors.
+Changed source without a file or parent-folder `Code` reference is a warning.
+A deleted or renamed file still named by a `Code` line is also a warning and can cause a missing-path error.
+Warnings do not change the exit code. Fix every error before merge.
+The check ignores fenced examples, so the sample header above is not treated as real evidence.
+
+Generated folder names are `.git`, `node_modules`, `bin`, `obj`, `wwwroot`, `dist`, `build`, `coverage`, `__pycache__`, `.venv`, and `generated`.
+Keep authored KB pages outside these folders.
+The check does not prove behavior claims, verify the SHA, or replace the code audit.
+There are no checked-in local hooks to update. Do not install a new hook for this task.
+Run `python scripts/kb/test_check_kb.py` for the focused checker fixtures.
+
 ## Planned
 
-Add a local path and index check, required agent bootstrap rules, and a repository search evaluation.
+Add required agent bootstrap rules and a repository search evaluation.
 Measure hit@1 and hit@5 after the audited pages are indexed. No search-quality result is available yet.
