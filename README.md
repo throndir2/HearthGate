@@ -3,8 +3,8 @@
 **Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Self-hosted operators and contributors
-**Last verified:** 2026-11-14 against 115c7f9
-**Code:** `src/HearthGate.Server/`, `src/HearthGate.Agent/`, `src/HearthGate.Contracts/`, `web/`, `config/`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.github/workflows/release.yml`
+**Last verified:** 2026-11-14 against acd55ed
+**Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`, `config/`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.github/workflows/release.yml`
 
 HearthGate is a self-hosted home page for services, status, and public GitHub projects.
 Guests see public cards and limited status data. Approved users get the permissions assigned to their groups.

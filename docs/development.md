@@ -3,7 +3,7 @@
 **Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Operators, contributors, and agents
-**Last verified:** 2026-11-14 against 95892be
+**Last verified:** 2026-11-14 against acd55ed
 **Code:** `HearthGate.slnx`, `src/HearthGate.Server/HearthGate.Server.csproj`, `src/HearthGate.Agent/HearthGate.Agent.csproj`, `src/HearthGate.Contracts/HearthGate.Contracts.csproj`, `src/HearthGate.Server/Properties/`, `src/HearthGate.Agent/Properties/`, `src/HearthGate.Server/appsettings.json`, `src/HearthGate.Agent/appsettings.json`, `web/package.json`, `web/package-lock.json`, `web/tsconfig.json`, `web/tsconfig.app.json`, `web/tsconfig.node.json`, `web/eslint.config.js`, `web/vite.config.ts`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.dockerignore`, `.gitignore`, `.github/workflows/release.yml`, `scripts/kb/`
 
 ## Local build commands and tools

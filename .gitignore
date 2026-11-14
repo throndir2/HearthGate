@@ -9,3 +9,5 @@ src/HearthGate.Server/wwwroot/
 .vscode/
 publish/
 .playwright-mcp/
+__pycache__/
+*.pyc

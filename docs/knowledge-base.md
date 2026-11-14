@@ -3,8 +3,8 @@
 **Status:** Partial
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against 95892be
-**Code:** `.github/mcp.json`, `scripts/kb/`
+**Last verified:** 2026-11-14 against acd55ed
+**Code:** `.github/mcp.json`, `scripts/kb/`, `AGENTS.md`, `.github/copilot-instructions.md`
 
 The knowledge base (KB) is the repository's Markdown documentation. It is the source of truth for current behavior.
 The source code supplies the evidence used to verify each page.
@@ -83,5 +83,5 @@ Run `python scripts/kb/test_check_kb.py` for the focused checker fixtures.
 
 ## Planned
 
-Add required agent bootstrap rules and a repository search evaluation.
+Add a repository search evaluation.
 Measure hit@1 and hit@5 after the audited pages are indexed. No search-quality result is available yet.
