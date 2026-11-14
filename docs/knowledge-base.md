@@ -1,10 +1,10 @@
 # Knowledge base contract
 
-**Status:** Partial
+**Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against acd55ed
-**Code:** `.github/mcp.json`, `scripts/kb/`, `AGENTS.md`, `.github/copilot-instructions.md`
+**Last verified:** 2026-11-14 against f3c01d5
+**Code:** `.github/mcp.json`, `scripts/kb/`, `AGENTS.md`, `.github/copilot-instructions.md`, `docs/repo-kb-eval.json`
 
 The knowledge base (KB) is the repository's Markdown documentation. It is the source of truth for current behavior.
 The source code supplies the evidence used to verify each page.
@@ -81,7 +81,35 @@ The check does not prove behavior claims, verify the SHA, or replace the code au
 There are no checked-in local hooks to update. Do not install a new hook for this task.
 Run `python scripts/kb/test_check_kb.py` for the focused checker fixtures.
 
-## Planned
+## Search evaluation
 
-Add a repository search evaluation.
-Measure hit@1 and hit@5 after the audited pages are indexed. No search-quality result is available yet.
+The [evaluation input](repo-kb-eval.json) contains 30 real repository questions.
+The CLI format is an array of objects with `q` and `expect`, where `expect` lists acceptable documentation paths.
+Run `npx -y github:throndir2/repo-kb eval docs/repo-kb-eval.json --json` from the repository root.
+Use `index` first to complete local embeddings before the measurement.
+Hit@1 means the expected page ranked first. Hit@3 and hit@5 mean it appeared within those result limits.
+The evaluation checks page retrieval, not answer correctness or token savings.
+
+Measured locally on 2026-11-14 with hybrid retrieval and all 82 chunks embedded:
+
+| Metric | Result |
+|---|---|
+| Questions | 30 |
+| hit@1 | 100% (30/30) |
+| hit@3 | 100% (30/30) |
+| hit@5 | 100% (30/30) |
+| Mean reciprocal rank | 1.000 |
+| Median search time | 8 ms |
+| Maximum search time | 360 ms |
+
+The measured corpus contained 14 Markdown files.
+This is a repository question set, not an independent benchmark.
+No page needed retrieval tuning for this set.
+Repeat the evaluation when a feature, page, or expected path changes.
+
+## Optional wiki mirror
+
+The GitHub repository reports that its wiki feature is enabled.
+On 2026-11-14, the wiki Git endpoint returned "Repository not found".
+No pushable wiki repository was available, so no mirror script or wiki publication was added.
+The checked-in documentation remains the source of truth. repo-kb does not need a wiki.

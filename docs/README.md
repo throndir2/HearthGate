@@ -3,7 +3,7 @@
 **Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against acd55ed
+**Last verified:** 2026-11-14 against f3c01d5
 **Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`
 
 Use this map before you read source files. The pages describe the current code, not an intended design.
@@ -20,6 +20,7 @@ Use this map before you read source files. The pages describe the current code, 
 - [Game control and commands](games.md): How do lifecycle actions, profiles, channels, and stop steps work?
 - [Browser UI](web.md): Where do routes, session state, polling, and UI controls live?
 - [Development and packaging](development.md): How do local builds, container packaging, and the Windows installer work?
+- [Search evaluation questions](repo-kb-eval.json): Which real repository questions measure KB retrieval quality?
 
 ## Code map
 
