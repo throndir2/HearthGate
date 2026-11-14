@@ -1,6 +1,27 @@
 # HearthGate agent instructions
 
+**Status:** Implemented
+**Last Updated:** 2026-11-14
+**Audience:** Coding agents and contributors
+**Last verified:** 2026-11-14 against acd55ed
+**Code:** `.github/mcp.json`, `scripts/kb/`
+
 HearthGate is a self-hosted home page: a public directory, status and GitHub showcase for guests, and accounts, host health and game-server control for approved users. Work at prototype speed: smallest change that works, a quick local check, then deliver.
+
+## Knowledge Base First (Required)
+
+- Always call `kb_search` on the local repo-kb MCP server when you must find, search, or move through the repository.
+- Open cited sections with `kb_read_section`. Use their `**Code:**` lines to find source, then read only the code you need.
+- Do not use broad grep, glob, directory listings, or file reads to explore. Use them only for exact names supplied by the KB.
+- If the KB has no answer or a wrong answer, find the answer in code and fix the doc in the same pull request.
+
+## Keep the KB true (Required)
+
+- A pull request that adds, renames, moves, or deletes code, config, scripts, commands, or behavior updates the KB.
+- Update the page, `**Code:**`, `**Last verified:**`, and folder index in the same pull request.
+- Give a new feature a page or section. Delete removed features or mark them Superseded.
+- If no doc must change, put "KB: no change needed" and the reason in the pull request body.
+- Before merge, run `python scripts/kb/check_kb.py --diff origin/main` and fix every error.
 
 ## Autonomous loop engineering
 
@@ -25,22 +46,13 @@ HearthGate is a self-hosted home page: a public directory, status and GitHub sho
 
 ## Repository layout
 
-- `src/HearthGate.Server/` - ASP.NET Core (.NET 10) API, background status checks, auth, admin. Features live in `Endpoints/`, `Auth/`, `Status/`, `GitHub/`, `Agents/`, `Security/`, `Data/`.
-- `src/HearthGate.Agent/` - host agent (Linux container or Windows service): host metrics, Docker via a read-only socket proxy, allow-listed game-server control.
-- `src/HearthGate.Contracts/` - DTOs shared by the server and the agent.
-- `web/` - React + TypeScript + Vite + Tailwind UI. `npm run build` writes to `src/HearthGate.Server/wwwroot` (git-ignored).
-- `config/` - example `hearthgate.yaml` and `agent.yaml`. `deploy/` - compose example and the Windows agent installer.
-- `Dockerfile`, `Dockerfile.agent`, `.github/workflows/release.yml` (manual or `v*` tag only).
+Start with [docs/README.md](../docs/README.md) for the question-to-code map.
+Use [the KB contract](../docs/knowledge-base.md) for page headers, evidence, and local checks.
 
 ## Build and check (local only)
 
-```powershell
-cd web; npm ci; npm run build; cd ..
-dotnet build HearthGate.slnx
-docker build -t hearthgate:local -f Dockerfile .    # when packaging changes
-```
-
-Run locally with `HG_INSECURE_COOKIES=true` (see README "Development").
+Use [local development and packaging](../docs/development.md).
+Build and check locally. Documentation-only changes need a diff inspection and the KB check, not a product build.
 
 ## Rules
 
@@ -53,6 +65,7 @@ Run locally with `HG_INSECURE_COOKIES=true` (see README "Development").
 - Every implementation task delivers to remote `main` by default, not only a local commit or a task branch.
 - After a quick local check (build, plus a direct check of the changed behavior), commit to the task branch, open or update a PR, and merge it into `main` without asking. Resolve merge conflicts and actionable review feedback first.
 - For documentation-only changes, inspect the diff instead of running a build. The same commit, PR, and merge steps apply.
+- Before merge, run the KB check with `--diff origin/main`. Fix every error and update the KB evidence and index.
 - Fetch `origin/main` and integrate it in the task worktree. Never touch the shared main checkout. Never force-push or overwrite concurrent work.
 - Before each push or PR operation, check every workflow trigger in `.github/workflows/`: nothing may start GitHub Actions. Only the manual or `v*` tag release workflow is allowed. Never add PR, push, or scheduled workflows, and never run tests or checks on Actions.
 - Run all engineering work locally. Never use Copilot Cloud or request hosted Copilot review. Use Actions only to build and publish an actual release.

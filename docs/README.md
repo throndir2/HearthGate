@@ -3,7 +3,7 @@
 **Status:** Implemented
 **Last Updated:** 2026-11-14
 **Audience:** Contributors and agents
-**Last verified:** 2026-11-14 against 95892be
+**Last verified:** 2026-11-14 against acd55ed
 **Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`
 
 Use this map before you read source files. The pages describe the current code, not an intended design.
@@ -38,5 +38,6 @@ Use this map before you read source files. The pages describe the current code, 
 ## Other documentation
 
 The root [README](../README.md) is the product overview.
+The [agent bootstrap](../AGENTS.md) requires KB-first source navigation and same-PR documentation updates.
 The checked-in [.github/copilot-instructions.md](../.github/copilot-instructions.md) contains repository working rules.
 Examples live in `config` and `deploy`; they are configuration inputs, not generated KB pages.
