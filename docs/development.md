@@ -4,7 +4,7 @@
 **Last Updated:** 2026-11-14
 **Audience:** Operators, contributors, and agents
 **Last verified:** 2026-11-14 against 95892be
-**Code:** `HearthGate.slnx`, `src/HearthGate.Server/HearthGate.Server.csproj`, `src/HearthGate.Agent/HearthGate.Agent.csproj`, `src/HearthGate.Contracts/HearthGate.Contracts.csproj`, `src/HearthGate.Server/Properties/`, `src/HearthGate.Agent/Properties/`, `src/HearthGate.Server/appsettings.json`, `src/HearthGate.Agent/appsettings.json`, `web/package.json`, `web/package-lock.json`, `web/tsconfig.json`, `web/tsconfig.app.json`, `web/tsconfig.node.json`, `web/eslint.config.js`, `web/vite.config.ts`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.dockerignore`, `.gitignore`, `.github/workflows/release.yml`
+**Code:** `HearthGate.slnx`, `src/HearthGate.Server/HearthGate.Server.csproj`, `src/HearthGate.Agent/HearthGate.Agent.csproj`, `src/HearthGate.Contracts/HearthGate.Contracts.csproj`, `src/HearthGate.Server/Properties/`, `src/HearthGate.Agent/Properties/`, `src/HearthGate.Server/appsettings.json`, `src/HearthGate.Agent/appsettings.json`, `web/package.json`, `web/package-lock.json`, `web/tsconfig.json`, `web/tsconfig.app.json`, `web/tsconfig.node.json`, `web/eslint.config.js`, `web/vite.config.ts`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.dockerignore`, `.gitignore`, `.github/workflows/release.yml`, `scripts/kb/`
 
 ## Local build commands and tools
 
@@ -17,6 +17,7 @@ Use `npm ci` only when dependencies need restoration. `npm run lint` runs ESLint
 Run `dotnet build HearthGate.slnx` from the repository root for a local solution build.
 There is no development setup script and no checked-in local Git hook.
 Documentation-only changes need a diff inspection, not a product build.
+Run the [local KB check](knowledge-base.md#local-check) before merge.
 Never dispatch hosted validation for this work.
 
 ## Development server and agent
