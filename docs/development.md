@@ -1,10 +1,10 @@
 # Local development and packaging
 
 **Status:** Implemented
-**Last Updated:** 2026-11-14
+**Last Updated:** 2026-11-22
 **Audience:** Operators, contributors, and agents
-**Last verified:** 2026-11-14 against acd55ed
-**Code:** `HearthGate.slnx`, `src/HearthGate.Server/HearthGate.Server.csproj`, `src/HearthGate.Agent/HearthGate.Agent.csproj`, `src/HearthGate.Contracts/HearthGate.Contracts.csproj`, `src/HearthGate.Server/Properties/`, `src/HearthGate.Agent/Properties/`, `src/HearthGate.Server/appsettings.json`, `src/HearthGate.Agent/appsettings.json`, `web/package.json`, `web/package-lock.json`, `web/tsconfig.json`, `web/tsconfig.app.json`, `web/tsconfig.node.json`, `web/eslint.config.js`, `web/vite.config.ts`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.dockerignore`, `.gitignore`, `.github/workflows/release.yml`, `scripts/kb/`
+**Last verified:** 2026-11-22 against 7fec4d6
+**Code:** `HearthGate.slnx`, `src/HearthGate.Server/HearthGate.Server.csproj`, `src/HearthGate.Agent/HearthGate.Agent.csproj`, `src/HearthGate.Contracts/HearthGate.Contracts.csproj`, `src/HearthGate.Server/Properties/`, `src/HearthGate.Agent/Properties/`, `src/HearthGate.Server/appsettings.json`, `src/HearthGate.Agent/appsettings.json`, `web/package.json`, `web/package-lock.json`, `web/tsconfig.json`, `web/tsconfig.app.json`, `web/tsconfig.node.json`, `web/eslint.config.js`, `web/vite.config.ts`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.dockerignore`, `.gitignore`, `.github/workflows/release.yml`, `scripts/kb/`, `scripts/deploy-rukkhadevata.ps1`
 
 ## Local build commands and tools
 
@@ -50,6 +50,24 @@ The agent is not published through Compose. The proxy network is internal.
 The server data mount is writable. The agent configuration mount is read-only.
 Give the container user access to those files. A missing agent config uses defaults; an unreadable existing file fails startup.
 The examples need deployment-specific edits; see [configuration](configuration.md).
+
+## Deploy over SSH (Rukkhadevata)
+
+`scripts/deploy-rukkhadevata.ps1` is the default deploy path for the Throndir deployment.
+Its defaults are the SSH alias `rukkhadevata`, the stack folder `/Volume1/apps/hearthgate`, and the NAS Docker folder.
+Use `-SshHost`, `-StackDir`, and `-DockerBin` for a different Docker host.
+The local computer needs Git and SSH only, not Docker.
+
+1. The script sends `git archive` of `-Ref` (default `HEAD`; use `origin/main` for a release of main) to the host.
+2. The host builds `hearthgate:<tag>` and `hearthgate-agent:<tag>` with the legacy builder (the NAS has no buildx).
+3. The script backs up `.env` to `.env.bak-deploy-<time>` and writes `HEARTHGATE_IMAGE` and `HEARTHGATE_AGENT_IMAGE`.
+4. It runs `docker compose up -d` and waits for `ok` from `/healthz` on `HEARTHGATE_BIND_ADDRESS:HEARTHGATE_PORT`.
+5. If the check fails, it restores the backup `.env` and starts the previous images again.
+
+The default tag is `0.1.0-<yyyyMMdd-HHmm>-<short sha>`. `-SkipBuild -Tag <tag>` deploys an existing image.
+`-Rollback` restores the newest `.env.bak-deploy-*` file and runs the health check.
+The stack folder holds the Compose file, a host-specific `docker-compose.override.yml`, `.env`, `data/`, and `agent/`.
+These files are not in the repository.
 
 ## Windows installer options
 

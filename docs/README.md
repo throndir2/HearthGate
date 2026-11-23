@@ -19,7 +19,7 @@ Use this map before you read source files. The pages describe the current code, 
 - [Host agent](agent.md): How does the agent read metrics and protect its API?
 - [Game control and commands](games.md): How do lifecycle actions, profiles, channels, and stop steps work?
 - [Browser UI](web.md): Where do routes, session state, polling, and UI controls live?
-- [Development and packaging](development.md): How do local builds, container packaging, and the Windows installer work?
+- [Development and packaging](development.md): How do local builds, container packaging, SSH deploys, and the Windows installer work?
 - [Search evaluation questions](repo-kb-eval.json): Which real repository questions measure KB retrieval quality?
 
 ## Code map
