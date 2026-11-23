@@ -1,10 +1,10 @@
 # HearthGate
 
 **Status:** Implemented
-**Last Updated:** 2026-11-14
+**Last Updated:** 2026-11-22
 **Audience:** Self-hosted operators and contributors
-**Last verified:** 2026-11-14 against acd55ed
-**Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`, `config/`, `deploy/`, `Dockerfile`, `Dockerfile.agent`, `.github/workflows/release.yml`
+**Last verified:** 2026-11-22 against 7fec4d6
+**Code:** `src/HearthGate.Server/Program.cs`, `src/HearthGate.Agent/Program.cs`, `web/src/main.tsx`, `config/`, `deploy/`, `scripts/deploy-rukkhadevata.ps1`, `Dockerfile`, `Dockerfile.agent`, `.github/workflows/release.yml`
 
 HearthGate is a self-hosted home page for services, status, and public GitHub projects.
 Guests see public cards and limited status data. Approved users get the permissions assigned to their groups.
@@ -35,6 +35,8 @@ The server container listens on port 8080. Put a reverse proxy with HTTPS in fro
 The agent listens on port 7177 by default. Keep the agent on a private network.
 The Compose example uses a Docker socket proxy for container reads.
 Docker game control needs write access through that proxy; ordinary host monitoring does not.
+[`scripts/deploy-rukkhadevata.ps1`](scripts/deploy-rukkhadevata.ps1) builds both images on a Docker host over SSH and deploys them with a health check and rollback.
+See [deploy over SSH](docs/development.md#deploy-over-ssh-rukkhadevata).
 
 The [Windows installer](deploy/windows/Install-HearthGateAgent.ps1) runs the agent as the signed-in user from a logon task.
 It keeps an existing `agent.yaml` unless `-ReplaceConfig` is set.
